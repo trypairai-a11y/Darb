@@ -258,6 +258,9 @@ export const zonesApi = {
   getSettings: () => get<FulfillmentSettings>("/api/zones/settings"),
   putSettings: (settings: Partial<FulfillmentSettings>) =>
     put<FulfillmentSettings>("/api/zones/settings", settings),
+  /** Revision 24b: the busy-driver cap alone, open to OPS_MANAGER as well as ADMIN. */
+  putDispatchSettings: (body: { maxActiveOrdersPerDriver: number }) =>
+    put<FulfillmentSettings>("/api/zones/settings/dispatch", body),
   quote: (body: { vendorId?: string; branchId?: string; dropoff: { lat: number; lng: number } }) =>
     post<ZoneQuote>("/api/zones/quote", body),
   resolve: (body: { lat: number; lng: number }) =>

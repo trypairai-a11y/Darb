@@ -295,7 +295,9 @@ export default function FleetRosterPage() {
                 <StatusBadge status="PENDING" label={t("fleetPortal.pendingReview")} />
               ) : (
                 <span className="inline-flex items-center gap-1.5">
-                  {row.inTraining ? (
+                  {row.terminationPending ? (
+                    <StatusBadge status="TERMINATED" label={t("fleetPortal.terminatedPendingClearance")} />
+                  ) : row.inTraining ? (
                     <StatusBadge status="PENDING" label={t("fleetPortal.inTraining")} />
                   ) : (
                     <StatusBadge status={value} />

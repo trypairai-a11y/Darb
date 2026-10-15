@@ -917,6 +917,10 @@ export interface FleetDriverRow {
   status: string;
   /** Revision 21c — in a Darb training window; the status alone read Inactive. */
   inTraining?: boolean;
+  /** Revision 24b: TERMINATED and Darb has not yet confirmed the equipment clearance. */
+  terminationPending?: boolean;
+  terminatedAt?: string | null;
+  terminationClearedAt?: string | null;
   vehicleType: string;
   performanceTier: string | null;
   throttledUntil: string | null;
@@ -1152,7 +1156,13 @@ export interface FleetDriverProfile {
     healthCertExpiry: string | null; healthCertStatus: string | null;
     workPermitExpiry: string | null; workPermitStatus: string | null;
     foodHandlingCertExpiry: string | null; foodHandlingCertStatus: string | null;
+    /** Revision 24b: same two-step termination reading as the staff profile. */
+    terminatedAt?: string | null;
+    terminationClearedAt?: string | null;
+    terminationPending?: boolean;
   };
+  /** Revision 24b: kit still issued to a driver pending clearance (empty otherwise). Read-only. */
+  equipmentToReturn?: Array<{ id: string; itemType: string; quantity: number; issuedDate: string | null }>;
   rating: { avg: number | null; count: number };
   documents: FleetDocument[];
   requests: FleetChangeRequest[];

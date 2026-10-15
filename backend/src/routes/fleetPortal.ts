@@ -351,6 +351,9 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
         drivingLicenseStatus: true, drivingLicenseExpiry: true,
         vehicleRegStatus: true, vehicleRegExpiry: true,
         healthCertStatus: true, healthCertExpiry: true,
+        // Revision 24b (#16 on the company side): a terminated driver reads
+        // "Terminated (pending clearance)" until Darb confirms the kit is back.
+        terminatedAt: true, terminationClearedAt: true,
       },
       orderBy: { name: "asc" },
     });
@@ -404,12 +407,16 @@ router.get("/drivers", requireFleetTab("ROSTER"), async (req: Request, res: Resp
           ordersLast7d: 0,
           // A driver with no Driver row has no wallet account either.
           cashOnHandKwd: "0.000",
+          terminatedAt: null,
+          terminationClearedAt: null,
+          terminationPending: false,
           submittedAt: r.createdAt,
         };
       }),
       ...drivers.map((d, i) => ({
         ...d,
         pending: false,
+        terminationPending: isTerminationPending(d),
         rating: ratings[i],
         ordersToday: activity.get(d.id)?.ordersToday ?? 0,
         ordersLast7d: activity.get(d.id)?.ordersLast7d ?? 0,
@@ -874,6 +881,15 @@ function readStatusDates(
 }
 
 /** Shared 403 for a driver that is not this fleet's to touch. */
+/**
+ * Revision 24 #16: TERMINATE leaves the driver pending until Darb's equipment
+ * clearance stamps terminationClearedAt. Drivers terminated before revision 24
+ * have neither stamp and read as pending, same as the staff side.
+ */
+function isTerminationPending(d: { status: string; terminationClearedAt: Date | null }): boolean {
+  return d.status === "TERMINATED" && !d.terminationClearedAt;
+}
+
 async function ownDriverOr404(
   ctx: { tenantId: string; fleetPartnerId: string },
   driverId: string,
@@ -1416,7 +1432,19 @@ router.get("/drivers/:id", requireFleetTab("ROSTER"), async (req: Request, res: 
         healthCertExpiry: driver.healthCertExpiry, healthCertStatus: driver.healthCertStatus,
         workPermitExpiry: driver.workPermitExpiry, workPermitStatus: driver.workPermitStatus,
         foodHandlingCertExpiry: driver.foodHandlingCertExpiry, foodHandlingCertStatus: driver.foodHandlingCertStatus,
+        // Revision 24b: same reading as the staff profile. Read-only here: the
+        // company hands the kit back, Darb ticks the clearance.
+        terminatedAt: driver.terminatedAt,
+        terminationClearedAt: driver.terminationClearedAt,
+        terminationPending: isTerminationPending(driver),
       },
+      // What clearance will mark returned: the same `issued && !returnedDate`
+      // rows clearTerminatedDriver walks. Empty for anyone not pending.
+      equipmentToReturn: isTerminationPending(driver)
+        ? equipment
+            .filter((e) => e.issued && !e.returnedDate)
+            .map((e) => ({ id: e.id, itemType: e.itemType, quantity: e.quantity, issuedDate: e.issuedDate }))
+        : [],
       rating,
       documents: documents.map(toDocDto),
       requests,

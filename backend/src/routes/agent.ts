@@ -2015,7 +2015,6 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
 
     if (action === "ACTION_CLOCK_IN") {
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const tomorrow = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
 
       // Locate a scheduled shift for today, else create one on the fly.
       //
@@ -2024,20 +2023,37 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
       // skips their morning slot and turns up for the afternoon: lateness
       // would be measured from 07:00. A shift already under way wins; else
       // the slot running now or the next one to start; else the last one.
-      const todays = await prisma.shift.findMany({
+      //
+      // A booked Shift's `date` is Kuwait midnight (POST /shift-requests), so
+      // the day is read on the Kuwait calendar, not the server's: on a UTC
+      // host the server's midnight is three hours after every booked date and
+      // the lookup found nothing, so each clock-in opened an ad-hoc 8-hour
+      // shift instead. Yesterday's slot still running past midnight counts.
+      const kuwaitDay = kuwaitDayBounds(now);
+      const window = await prisma.shift.findMany({
         where: {
           tenantId,
           driverId: driver.id,
-          date: { gte: todayStart, lt: tomorrow },
+          date: { gte: new Date(kuwaitDay.start.getTime() - DAY_MS), lt: kuwaitDay.end },
           status: { in: ["BOOKED", "IN_PROGRESS"] },
         },
         orderBy: { scheduledStart: "asc" },
       });
+      const todays = (window ?? []).filter(
+        (s) =>
+          new Date(s.date).getTime() >= kuwaitDay.start.getTime() ||
+          s.status === "IN_PROGRESS" ||
+          new Date(s.scheduledEnd).getTime() > now.getTime(),
+      );
       let shift =
         todays.find((s) => s.status === "IN_PROGRESS") ??
         todays.find((s) => new Date(s.scheduledEnd).getTime() > now.getTime()) ??
         todays[todays.length - 1] ??
         null;
+      // A second clock-in on a slot already under way (the app retrying, a
+      // double tap) is the same clock-in: it must not move actualStart or add
+      // the slot's late minutes to the day a second time.
+      const alreadyIn = shift?.status === "IN_PROGRESS";
 
       if (!shift) {
         shift = await prisma.shift.create({
@@ -2045,7 +2061,7 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
             tenantId,
             driverId: driver.id,
             platform: driver.platform,
-            date: todayStart,
+            date: kuwaitDay.start,
             scheduledStart: now,
             scheduledEnd: new Date(now.getTime() + 8 * 60 * 60 * 1000),
             status: "BOOKED",
@@ -2057,7 +2073,7 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
       await prisma.shift.update({
         where: { id: shift.id },
         data: {
-          actualStart: now,
+          ...(alreadyIn ? {} : { actualStart: now }),
           status: "IN_PROGRESS",
           selfieUrl,
           selfieLocation: latitude != null && longitude != null ? { latitude, longitude } : undefined,
@@ -2065,8 +2081,10 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
         },
       });
 
-      // Attendance row + late detection
-      const lateMs = now.getTime() - new Date(shift.scheduledStart).getTime();
+      // Attendance row + late detection, measured from when the driver first
+      // clocked into this slot.
+      const clockedInAt = alreadyIn && shift.actualStart ? new Date(shift.actualStart) : now;
+      const lateMs = clockedInAt.getTime() - new Date(shift.scheduledStart).getTime();
       const lateMinutes = Math.max(0, Math.floor(lateMs / 60000));
       const isLate = lateMinutes >= 1;
 
@@ -2106,7 +2124,7 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
             : existing?.darbClockIn
               ? {
                   status: isLate || existing.status === "LATE" ? "LATE" : existing.status,
-                  lateMinutes: (existing.lateMinutes ?? 0) + (isLate ? lateMinutes : 0),
+                  lateMinutes: (existing.lateMinutes ?? 0) + (isLate && !alreadyIn ? lateMinutes : 0),
                 }
               : { status: isLate ? "LATE" : "PRESENT", lateMinutes: isLate ? lateMinutes : 0 }),
         },
@@ -2187,8 +2205,12 @@ router.post("/selfie", upload.single("selfie"), async (req: Request, res: Respon
         });
       }
 
-      // Mirror Darb clock-out to AttendanceRecord
-      const dayStart = new Date(shift.date.getFullYear(), shift.date.getMonth(), shift.date.getDate());
+      // Mirror Darb clock-out to AttendanceRecord. The row was keyed at
+      // clock-in on the server's calendar day of the clock-in instant, so it is
+      // found the same way here: the shift's own `date` is Kuwait midnight,
+      // which on a UTC host is the server's previous day.
+      const clockInAt = new Date(shift.actualStart ?? shift.date);
+      const dayStart = new Date(clockInAt.getFullYear(), clockInAt.getMonth(), clockInAt.getDate());
       await prisma.attendanceRecord.updateMany({
         where: { tenantId, driverId: driver.id, date: dayStart },
         data: { darbClockOut: now },

@@ -100,7 +100,7 @@ async function notifyOps(tenantId: string, flagged: StaleOrderRow[]): Promise<vo
     if (users.length === 0) return;
     const numbers = flagged.slice(0, 10).map((o) => o.orderNumber).join(", ");
     const more = flagged.length > 10 ? ` and ${flagged.length - 10} more` : "";
-    const moreAr = flagged.length > 10 ? ` و${flagged.length - 10} طلبات أخرى` : "";
+    const moreAr = flagged.length > 10 ? ` و${flagged.length - 10} أخرى` : "";
     await prisma.notification.createMany({
       data: users.map((user) => ({
         tenantId,
@@ -108,7 +108,7 @@ async function notifyOps(tenantId: string, flagged: StaleOrderRow[]): Promise<vo
         title: "Orders stuck for over a day",
         message: `${flagged.length} order(s) have not moved for ${STALE_AFTER_HOURS} hours and need a person to close them: ${numbers}${more}. Orders already collected may involve the customer's goods or cash.`,
         titleAr: "طلبات متوقفة لأكثر من يوم",
-        bodyAr: `${flagged.length} طلب لم يتحرك منذ ${STALE_AFTER_HOURS} ساعة ويحتاج إغلاقا يدويا: ${numbers}${moreAr}. الطلبات المستلمة قد تتضمن بضاعة العميل أو نقدا.`,
+        bodyAr: `${flagged.length} من الطلبات لم تتحرك منذ ${STALE_AFTER_HOURS} ساعة وتحتاج إلى إغلاق يدوي: ${numbers}${moreAr}. الطلبات التي استُلمت من المتجر قد تتضمن بضاعة العميل أو نقداً.`,
         type: "ORDERS_STALE",
         severity: "HIGH",
         sourceId: flagged[0].id,

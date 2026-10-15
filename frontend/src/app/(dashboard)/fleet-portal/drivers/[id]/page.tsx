@@ -104,7 +104,7 @@ export default function FleetDriverProfilePage() {
     );
   }
 
-  const { driver, rating, documents, requests, equipment, issues, activity, storageConfigured } = profileQuery.data;
+  const { driver, rating, documents, requests, equipment, equipmentToReturn, issues, activity, storageConfigured } = profileQuery.data;
 
   async function openFile(id: string) {
     try {
@@ -194,7 +194,9 @@ export default function FleetDriverProfilePage() {
             {driver.name}
           </h1>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap text-sm text-sand-600">
-            {driver.inTraining ? (
+            {driver.terminationPending ? (
+              <StatusBadge status="TERMINATED" label={t("fleetPortal.terminatedPendingClearance")} />
+            ) : driver.inTraining ? (
               <StatusBadge status="PENDING" label={t("fleetPortal.inTraining")} />
             ) : (
               <StatusBadge status={driver.status} />
@@ -252,6 +254,30 @@ export default function FleetDriverProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* Revision 24b: a terminated driver stays pending until Darb confirms
+          the kit is back. The company sees what is still out; it cannot tick
+          the clearance itself. */}
+      {driver.terminationPending && (
+        <section className="rounded-2xl border border-red-200 bg-red-50/40 p-5 space-y-3" data-testid="driver-clearance">
+          <h2 className="font-display text-lg text-sand-900">{t("fleetPortal.clearanceTitle")}</h2>
+          <p className="text-sm text-sand-700">{t("fleetPortal.clearanceHint")}</p>
+          {!equipmentToReturn?.length ? (
+            <p className="text-sm text-sand-600">{t("fleetPortal.clearanceNothing")}</p>
+          ) : (
+            <ul className="divide-y divide-red-100">
+              {equipmentToReturn.map((item) => (
+                <li key={item.id} className="py-2 text-sm flex justify-between gap-3">
+                  <p className="font-medium">{item.itemType.replaceAll("_", " ")} · {item.quantity}</p>
+                  <p className="text-xs text-sand-600">
+                    {t("revision19.issued")} · {item.issuedDate ? formatDate(item.issuedDate, locale) : "n/a"}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <section className="rounded-2xl border border-sand-200 bg-white p-5 space-y-3" data-testid="driver-requests">
         <h2 className="font-display text-lg text-sand-900">{t("revision19.requests")}</h2>

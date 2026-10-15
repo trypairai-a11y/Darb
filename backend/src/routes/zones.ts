@@ -83,6 +83,9 @@ const surchargeMatrixSchema = z.array(
   }),
 ).max(2000);
 
+/** Highest busy-driver cap either settings endpoint accepts. */
+const MAX_ACTIVE_ORDERS_CEILING = 10;
+
 const settingsSchema = z.object({
   intraZoneFeeKwd: positiveKwdAmountSchema.optional(),
   driverCashCeilingKwd: positiveKwdAmountSchema.optional(),
@@ -99,8 +102,14 @@ const settingsSchema = z.object({
   batchMaxOrders: z.number().int().min(2).max(5).optional(),
   // Revision 24 (#5): live orders one driver may hold once busy drivers are
   // offered work. 1 = free drivers only.
-  maxActiveOrdersPerDriver: z.number().int().min(1).max(6).optional(),
+  maxActiveOrdersPerDriver: z.number().int().min(1).max(MAX_ACTIVE_ORDERS_CEILING).optional(),
 });
+
+// Revision 24b: the busy-driver cap is an ops knob, so OPS_MANAGER may set it
+// on its own without being handed the fee fields of PUT /settings.
+const dispatchSettingsSchema = z.object({
+  maxActiveOrdersPerDriver: z.number().int().min(1).max(MAX_ACTIVE_ORDERS_CEILING),
+}).strict();
 
 // ─── Polygon normalization ──────────────────────────────────────────────────
 
@@ -445,6 +454,48 @@ router.put(
   },
 );
 
+/**
+ * @openapi
+ * /api/zones/settings/dispatch:
+ *   put:
+ *     tags: [Zones]
+ *     summary: Set the busy-driver cap (ADMIN, OPS_MANAGER)
+ *     description: >
+ *       maxActiveOrdersPerDriver is how many live orders a working driver may
+ *       hold before dispatch stops offering them more (1 = free drivers only).
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [maxActiveOrdersPerDriver]
+ *             properties:
+ *               maxActiveOrdersPerDriver: { type: integer, minimum: 1, maximum: 10 }
+ *     responses:
+ *       200:
+ *         description: Upserted settings row
+ */
+router.put(
+  "/settings/dispatch",
+  rbac(...ZONE_EDITORS),
+  validateBody(dispatchSettingsSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user!.tenantId;
+      const { maxActiveOrdersPerDriver } = req.body as z.infer<typeof dispatchSettingsSchema>;
+      const settings = await prisma.fulfillmentSettings.upsert({
+        where: { tenantId },
+        update: { maxActiveOrdersPerDriver },
+        create: { tenantId, maxActiveOrdersPerDriver },
+      });
+      res.json(settings);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
 // ─── Resolution tester + quoting ────────────────────────────────────────────
 
 /**
@@ -510,9 +561,11 @@ router.post("/quote", validateBody(quoteSchema), async (req: Request, res: Respo
   try {
     const tenantId = req.user!.tenantId;
     const input = req.body as z.infer<typeof quoteSchema>;
-    const result = await quoteDelivery(tenantId, input);
+    // The jest transform runs non-strict, where `!result.ok` does not narrow
+    // the union; `=== false` narrows in both modes.
+    const result = await quoteDelivery(tenantId, input as Parameters<typeof quoteDelivery>[1]);
 
-    if (!result.ok) {
+    if (result.ok === false) {
       res.json({ ok: false, reason: result.reason });
       return;
     }
@@ -569,7 +622,7 @@ router.post(
       const body = req.body as z.infer<typeof createZoneSchema>;
 
       const normalized = normalizePolygon(body.polygon);
-      if (!normalized.ok) {
+      if (normalized.ok === false) {
         res.status(400).json({ error: normalized.error });
         return;
       }
@@ -635,7 +688,7 @@ router.put(
       if (body.isActive !== undefined) data.isActive = body.isActive;
       if (body.polygon !== undefined) {
         const normalized = normalizePolygon(body.polygon);
-        if (!normalized.ok) {
+        if (normalized.ok === false) {
           res.status(400).json({ error: normalized.error });
           return;
         }

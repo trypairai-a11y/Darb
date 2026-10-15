@@ -14,6 +14,7 @@ import ErrorState from "@/components/shared/ErrorState";
 import { PageSkeleton } from "@/components/shared/Skeleton";
 import { useToast } from "@/components/shared/Toast";
 import LiveMap from "@/components/map/LiveMap";
+import DispatchCapCard from "@/components/zones/DispatchCapCard";
 import { zoneColor, zoneRingLatLngs } from "@/components/map/zoneGeometry";
 import { zonesApi, unwrapList } from "@/lib/darbApi";
 import type { DeliveryZone, GeoJsonPolygon } from "@/types/darb";
@@ -361,6 +362,10 @@ export default function ZonesPage() {
           />
         </div>
       </div>
+
+      {/* Revision 24b: the busy-driver cap. Dispatch reach lives with the
+          areas it reaches over, and this is an ops knob, not a price. */}
+      {canManageSettings && <DispatchCapCard />}
 
       {/* Zone form */}
       <SlidePanel
