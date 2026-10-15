@@ -1388,6 +1388,7 @@ export interface Messages {
   };
   hq: { ops: string; compliance: string; finance: string; admin: string; opsTitle: string; opsSubtitle: string; tabLive: string; tabOrders: string; tabEquipment: string; tabZones: string; tabDriverTracking: string; tabShiftPlanning: string; tabDriverTraining: string; tabOnboarding: string; tabRequests: string; openRequests: string; openFull: string };
   rev24Ops: { selectAll: string; selectDriver: string; selectedCount: string; clearSelection: string; bulkConfirmTitle: string; bulkConfirmMessage: string; bulkFreezeTitle: string; bulkTrainTitle: string; bulkResultTitle: string; bulkResultSummary: string; bulkAllDone: string; bulkDone: string; bulkNotApplied: string; pendingClearance: string; routeTitle: string; routePickup: string; routeDropoff: string; routeToPickup: string; routeToDropoff: string; routeNoPath: string; routeNoPins: string };
+  terminationClearance: { title: string; clearedBody: string; clearedOn: string; clearedBy: string; clearedFinal: string; note: string; pendingBody: string; pendingOn: string; noneOutstanding: string; stillWithDriver: string; confirmItems: string; confirmNothing: string; notePlaceholder: string; saving: string; confirm: string; supervisorOnly: string; toastCleared: string; toastError: string; statusTerminated: string; statusPending: string };
   driverTracking: { title: string; subtitle: string; windowDays: string; driver: string; company: string; area: string; state: string; delivered: string; failed: string; onTime: string; acceptance: string; rating: string; documents: string; lastSeen: string; actions: string; activate: string; deactivate: string; suspend: string; freeze: string; unfreeze: string; sendToTraining: string; frozen: string; inTraining: string; freezeReason: string; freezeReasonHint: string; trainingPeriod: string; days: string; oneDay: string; trainingReason: string; sent: string; stateSaved: string; empty: string; searchPlaceholder: string; allCompanies: string; allAreas: string; allStates: string; inTrainingBlocked: string; passTraining: string; failTraining: string; finishTrainingTitle: string; passTrainingConfirm: string; failTrainingConfirm: string; trainingFinished: string; violations: string; violationsHint: string; rejections: string; rejectionsHint: string; openIssues: string; filterBy: string; filterAny: string; filterNone: string; filterAtLeast: string; filterBelow: string; filterBetween: string; filterNotRated: string; docsComplete: string; docsMissing: string; clearFilters: string; sortHint: string; matching: string; stateActive: string; stateInactive: string; stateSuspended: string; stateTerminated: string };
   shiftPlan: { title: string; subtitle: string; weekOf: string; generate: string; regenerate: string; approve: string; discard: string; statusDraft: string; statusApproved: string; statusDiscarded: string; noPlan: string; noPlanHint: string; basis: string; proposed: string; approved: string; demand: string; zone: string; window: string; save: string; saved: string; approvedToast: string; approveWarning: string; approvedBy: string; suggestedDrivers: string; noSuggestions: string; readOnly: string; weekAlreadyApproved: string; prevWeek: string; nextWeek: string; totalDrivers: string; driversAvailable: string; driversUnassigned: string; zoneDrivers: string; overCapacity: string; ordersCount: string; amendWarning: string; amended: string; rebuildTitle: string; rebuildConfirm: string; rebuildAction: string; rebuilt: string; dayDuty: string; nightDuty: string; neededOnDay: string; zoneNeeded: string; zoneShort: string; driverAreas: string };
   shiftSlots: { planMethod: string; neededOnDay: string; zoneNeeded: string; zoneShort: string; driverHours: string; curveTitle: string; legendNeed: string; legendCover: string; curveHour: string; underCovered: string; noCurve: string; slots: string; noSlots: string; hours: string; length: string; startsAt: string; addSlot: string; remove: string; added: string; slotExists: string; proposedN: string; coverageTitle: string; coverageHint: string; plannedLayout: string; standardLayout: string; bookingsTitle: string; bookingsHint: string; bookingsSummary: string; bookedOf: string; fullDuty: string; noBookings: string; };
@@ -4088,6 +4089,28 @@ export const en: Messages = {
     routeToDropoff: "Driver to customer",
     routeNoPath: "No driver path recorded for this order.",
     routeNoPins: "No locations on file for this order.",
+  },
+  terminationClearance: {
+    title: "Equipment clearance",
+    clearedBody: "Equipment received back and cleared",
+    clearedOn: " on {date}",
+    clearedBy: " by {name}",
+    clearedFinal: ". This driver is finally terminated.",
+    note: "Note: {note}",
+    pendingBody: "This driver was terminated{on}. Termination is final once the equipment issued to them has been received back.",
+    pendingOn: " on {date}",
+    noneOutstanding: "No equipment is recorded as still with this driver.",
+    stillWithDriver: "Still with the driver",
+    confirmItems: "I confirm all the equipment listed above has been received back from this driver.",
+    confirmNothing: "I confirm nothing is owed back by this driver.",
+    notePlaceholder: "Note (optional), for example a missing or damaged item",
+    saving: "Saving",
+    confirm: "Confirm clearance and finalise termination",
+    supervisorOnly: "A supervisor or above records the clearance.",
+    toastCleared: "Equipment cleared. The driver is finally terminated.",
+    toastError: "Could not record the clearance",
+    statusTerminated: "Terminated",
+    statusPending: "Terminated (pending clearance)",
   },
   driverTracking: {
     title: "Driver tracking",
@@ -7416,6 +7439,28 @@ export const ar: Messages = {
     routeToDropoff: "المندوب إلى العميل",
     routeNoPath: "لا يوجد مسار مسجَّل للمندوب لهذا الطلب.",
     routeNoPins: "لا توجد مواقع مسجَّلة لهذا الطلب.",
+  },
+  terminationClearance: {
+    title: "تسوية العُهدة",
+    clearedBody: "استُلمت العُهدة وتمت تسويتها",
+    clearedOn: " بتاريخ {date}",
+    clearedBy: " بواسطة {name}",
+    clearedFinal: ". أُنهيت خدمة هذا السائق نهائيًا.",
+    note: "ملاحظة: {note}",
+    pendingBody: "أُنهيت خدمة هذا السائق{on}. يصبح الإنهاء نهائيًا بعد استلام العُهدة المسلّمة إليه.",
+    pendingOn: " بتاريخ {date}",
+    noneOutstanding: "لا توجد عُهدة مسجّلة لدى هذا السائق.",
+    stillWithDriver: "ما زال لدى السائق",
+    confirmItems: "أؤكد استلام جميع العُهدة المذكورة أعلاه من هذا السائق.",
+    confirmNothing: "أؤكد أنه لا توجد عُهدة مستحقة على هذا السائق.",
+    notePlaceholder: "ملاحظة (اختيارية)، مثل قطعة مفقودة أو تالفة",
+    saving: "جارٍ الحفظ",
+    confirm: "تأكيد التسوية وإنهاء الخدمة نهائيًا",
+    supervisorOnly: "يسجّل التسوية مشرف أو من هو أعلى منه.",
+    toastCleared: "تمت تسوية العُهدة. أُنهيت خدمة السائق نهائيًا.",
+    toastError: "تعذّر تسجيل التسوية",
+    statusTerminated: "منهي",
+    statusPending: "منهي (بانتظار تسوية العُهدة)",
   },
   driverTracking: {
     title: "متابعة المندوبين",

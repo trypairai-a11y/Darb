@@ -37,7 +37,8 @@ router.use(authMiddleware, requireSuperAdmin);
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 function currentYearMonth(): string {
-  const now = new Date();
+  // Kuwait time (UTC+3), so the first three hours of the 1st are the new month.
+  const now = new Date(Date.now() + 3 * 60 * 60 * 1000);
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 

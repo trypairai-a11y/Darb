@@ -80,3 +80,15 @@ describe("isCourierActiveThisMonth", () => {
     await expect(isCourierActiveThisMonth(TENANT, "drv-1", "2026-10")).resolves.toBe(false);
   });
 });
+
+describe("computeMonthlyBill: the month runs on Kuwait time", () => {
+  test("a shift on the 1st (Kuwait midnight, 21:00 UTC the day before) is in that month", async () => {
+    (prisma.shift.findMany as jest.Mock).mockResolvedValue([]);
+
+    await computeMonthlyBill({ tenantId: TENANT, yearMonth: "2026-10" });
+
+    const where = (prisma.shift.findMany as jest.Mock).mock.calls[0][0].where;
+    expect(where.date.gte).toEqual(new Date("2026-09-30T21:00:00.000Z"));
+    expect(where.date.lt).toEqual(new Date("2026-10-31T21:00:00.000Z"));
+  });
+});

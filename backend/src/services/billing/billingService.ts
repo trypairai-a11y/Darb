@@ -47,8 +47,14 @@ interface ComputeArgs {
   yearMonth: string; // "YYYY-MM"
 }
 
+/** Kuwait is UTC+3 all year (no DST). */
+const KUWAIT_OFFSET_MS = 3 * 60 * 60 * 1000;
+
 /**
- * Parse "YYYY-MM" into a {start, end} UTC range (start inclusive, end exclusive).
+ * Parse "YYYY-MM" into a {start, end} range (start inclusive, end exclusive)
+ * on Kuwait month boundaries. Shift.date is stored as Kuwait midnight
+ * (21:00 UTC the day before), so a UTC range dropped the 1st of the month
+ * into the previous month's bill.
  */
 function monthBounds(yearMonth: string): { start: Date; end: Date } {
   const match = /^(\d{4})-(\d{2})$/.exec(yearMonth);
@@ -59,8 +65,8 @@ function monthBounds(yearMonth: string): { start: Date; end: Date } {
   }
   const year = Number(match[1]);
   const monthIdx = Number(match[2]) - 1; // 0..11
-  const start = new Date(Date.UTC(year, monthIdx, 1));
-  const end = new Date(Date.UTC(year, monthIdx + 1, 1));
+  const start = new Date(Date.UTC(year, monthIdx, 1) - KUWAIT_OFFSET_MS);
+  const end = new Date(Date.UTC(year, monthIdx + 1, 1) - KUWAIT_OFFSET_MS);
   return { start, end };
 }
 

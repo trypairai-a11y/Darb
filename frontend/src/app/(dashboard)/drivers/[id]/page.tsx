@@ -18,6 +18,7 @@ import { driverTrackingApi, driverTrainingApi } from "@/lib/darbApi";
 import { itemDisplayName } from "@/lib/equipmentItems";
 import { useRole } from "@/hooks/useRole";
 import { useToast } from "@/components/shared/Toast";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { TrainingSession } from "@/types/darb";
 import type { DriverFileData } from "@/types/driver-file";
 import ScoreTrendChart from "@/components/driver-file/ScoreTrendChart";
@@ -253,6 +254,8 @@ function EquipmentPanel({ items }: { items: InventoryItem[] }) {
 function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; onCleared: () => void }) {
   const p = data.profile;
   const toast = useToast();
+  const { t } = useI18n();
+  const tc = (key: string) => t(`terminationClearance.${key}`);
   const { hasRole } = useRole();
   const canClear = hasRole("SUPERVISOR");
   const [confirmed, setConfirmed] = useState(false);
@@ -262,14 +265,15 @@ function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; 
 
   if (!p.terminationPending) {
     return (
-      <Panel title="Equipment clearance">
+      <Panel title={tc("title")}>
         <p className="text-sm text-foreground" data-testid="termination-cleared">
-          Equipment received back and cleared
-          {p.terminationClearedAt ? ` on ${formatDate(p.terminationClearedAt)}` : ""}
-          {p.terminationClearedBy ? ` by ${p.terminationClearedBy.name}` : ""}. This driver is finally terminated.
+          {tc("clearedBody")}
+          {p.terminationClearedAt ? tc("clearedOn").replace("{date}", formatDate(p.terminationClearedAt)) : ""}
+          {p.terminationClearedBy ? tc("clearedBy").replace("{name}", p.terminationClearedBy.name) : ""}
+          {tc("clearedFinal")}
         </p>
         {p.terminationClearanceNote ? (
-          <p className="mt-2 text-sm text-sand-700">Note: {p.terminationClearanceNote}</p>
+          <p className="mt-2 text-sm text-sand-700">{tc("note").replace("{note}", p.terminationClearanceNote)}</p>
         ) : null}
       </Panel>
     );
@@ -279,11 +283,11 @@ function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; 
     setBusy(true);
     try {
       await driverTrackingApi.clearTermination(p.id, note.trim() || undefined);
-      toast.success("Equipment cleared. The driver is finally terminated.");
+      toast.success(tc("toastCleared"));
       onCleared();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Could not record the clearance");
+      toast.error(message ?? tc("toastError"));
     } finally {
       setBusy(false);
     }
@@ -292,18 +296,20 @@ function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; 
   return (
     <section className="rounded-lg border border-red-200 bg-red-50/40" data-testid="termination-clearance">
       <div className="border-b border-red-100 px-5 py-4">
-        <h2 className="text-base font-semibold text-foreground">Equipment clearance</h2>
+        <h2 className="text-base font-semibold text-foreground">{tc("title")}</h2>
         <p className="mt-1 text-sm text-sand-700">
-          This driver was terminated{p.terminatedAt ? ` on ${formatDate(p.terminatedAt)}` : ""}. Termination is final
-          once the equipment issued to them has been received back.
+          {tc("pendingBody").replace(
+            "{on}",
+            p.terminatedAt ? tc("pendingOn").replace("{date}", formatDate(p.terminatedAt)) : "",
+          )}
         </p>
       </div>
       <div className="space-y-4 p-5">
         {outstanding.length === 0 ? (
-          <p className="text-sm text-sand-700">No equipment is recorded as still with this driver.</p>
+          <p className="text-sm text-sand-700">{tc("noneOutstanding")}</p>
         ) : (
           <div>
-            <p className="mb-2 text-xs text-sand-700">Still with the driver</p>
+            <p className="mb-2 text-xs text-sand-700">{tc("stillWithDriver")}</p>
             <ul className="space-y-1">
               {outstanding.map((item) => (
                 <li key={item.id} className="text-sm text-foreground">
@@ -324,16 +330,14 @@ function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; 
                 className="mt-0.5 h-4 w-4 rounded border-sand-300 accent-primary"
               />
               <span>
-                {outstanding.length
-                  ? "I confirm all the equipment listed above has been received back from this driver."
-                  : "I confirm nothing is owed back by this driver."}
+                {outstanding.length ? tc("confirmItems") : tc("confirmNothing")}
               </span>
             </label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
-              placeholder="Note (optional), for example a missing or damaged item"
+              placeholder={tc("notePlaceholder")}
               className="w-full rounded-lg border border-sand-200 bg-white p-3 text-sm"
             />
             <button
@@ -343,11 +347,11 @@ function TerminationClearancePanel({ data, onCleared }: { data: DriverFileData; 
               onClick={() => void clear()}
               className="h-10 rounded-full bg-primary px-5 text-sm font-medium text-white disabled:opacity-40"
             >
-              {busy ? "Saving" : "Confirm clearance and finalise termination"}
+              {busy ? tc("saving") : tc("confirm")}
             </button>
           </>
         ) : (
-          <p className="text-sm text-sand-700">A supervisor or above records the clearance.</p>
+          <p className="text-sm text-sand-700">{tc("supervisorOnly")}</p>
         )}
       </div>
     </section>
@@ -386,6 +390,7 @@ export default function DriverFilePage() {
   const id = params?.id;
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   // Revision 24 #15: "there is no back button on this page". Back to wherever
   // the user came from; a profile opened from a pasted link goes to Driver
   // tracking, which is where profiles are opened from.
@@ -434,7 +439,9 @@ export default function DriverFilePage() {
     .toUpperCase();
 
   const statusLabel =
-    p.status === "TERMINATED" ? (p.terminationPending ? "Terminated (pending clearance)" : "Terminated") : formatEnum(p.status);
+    p.status === "TERMINATED"
+      ? t(p.terminationPending ? "terminationClearance.statusPending" : "terminationClearance.statusTerminated")
+      : formatEnum(p.status);
 
   return (
     <div className="w-full max-w-none space-y-5 p-6 lg:p-8">
