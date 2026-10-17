@@ -20,7 +20,7 @@ import { isReturningToStore } from "@/lib/orderReturn";
 import { OrderOutcomeBanner } from "@/components/darb/OrderOutcome";
 import SlaCountdown from "@/components/darb/SlaCountdown";
 import TrackingLink from "@/components/darb/TrackingLink";
-import LiveMap from "@/components/map/LiveMap";
+import OrderRouteMap from "@/components/map/OrderRouteMap";
 import { useVendorBranch } from "@/contexts/VendorBranchContext";
 import { vendorApi } from "@/lib/darbApi";
 import type { DeliveryOrder, DeliveryOrderEvent } from "@/types/darb";
@@ -181,42 +181,11 @@ export default function VendorOrderDetailPage() {
   // An inspecting admin gets GETs only (middleware/vendorScope), so neither
   // write action is offered to them.
   const canCancel = CANCELLABLE.includes(order.status) && !inspectVendorId;
-  const hasDropoff = order.dropoffLat != null && order.dropoffLng != null;
 
-  // Revision 11 (#6). The map showed the dropoff pin and nothing else, so it
-  // answered a question the shop already knew the answer to. The driver's last
-  // fix rides on the same 10s poll as the rest of the page, so the dot moves
-  // without a socket or a second request.
+  // Revision 11 (#6). The driver's last fix rides on the same 10s poll as the
+  // rest of the page, so the dot moves without a socket or a second request.
+  // It is null once the order has ended, on purpose.
   const driverPos = order.driverPosition ?? null;
-  const mapDrivers =
-    driverPos && order.driver
-      ? [
-          {
-            driverId: order.driver.id,
-            lat: driverPos.lat,
-            lng: driverPos.lng,
-            at: order.driverPositionAt ?? new Date().toISOString(),
-            name: order.driver.name,
-            hasActiveOrder: true,
-          },
-        ]
-      : [];
-  // Both pins in frame, but re-fit only when the driver has moved about a
-  // kilometre: fitting on every fix would yank the map out from under anyone
-  // trying to zoom in on it.
-  const fitPoints: [number, number][] = [];
-  if (driverPos) fitPoints.push([Math.round(driverPos.lat * 100) / 100, Math.round(driverPos.lng * 100) / 100]);
-  if (hasDropoff) fitPoints.push([Number(order.dropoffLat), Number(order.dropoffLng)]);
-  // Null when there is nothing to draw, and the map does not render at all.
-  // This read the driver's position unconditionally when the order had no
-  // dropoff coordinates, which is every delivered order — its driver position
-  // is deliberately null — so opening one threw "Cannot read properties of
-  // null". A centre has to be as optional as the two things it is derived from.
-  const mapCenter: [number, number] | null = hasDropoff
-    ? [Number(order.dropoffLat), Number(order.dropoffLng)]
-    : driverPos
-      ? [driverPos.lat, driverPos.lng]
-      : null;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -316,37 +285,28 @@ export default function VendorOrderDetailPage() {
         />
       )}
 
-      {/* Where the driver is and where the order is going. */}
-      {mapCenter && (
-        <div className="bg-card border border-sand-200 rounded-2xl shadow-soft overflow-hidden">
-          <LiveMap
-            height="240px"
-            center={mapCenter}
-            zoom={14}
-            drivers={mapDrivers}
-            marker={
-              hasDropoff
-                ? {
-                    lat: Number(order.dropoffLat),
-                    lng: Number(order.dropoffLng),
-                    label: order.customerName ?? order.orderNumber,
-                  }
-                : null
-            }
-            fitBounds={fitPoints.length > 1 ? fitPoints : null}
-          />
-          {driverPos && (
-            <p className="px-4 py-2.5 text-xs text-sand-600 border-t border-sand-200">
-              {order.driverPositionAt
-                ? t("vendorPortal.mapDriverLiveAt").replace(
-                    "{time}",
-                    formatTime(order.driverPositionAt, locale)
-                  )
-                : t("vendorPortal.mapDriverLive")}
-            </p>
-          )}
-        </div>
-      )}
+      {/* Client note (Osama, 15 Oct 2026): the order map shows the store, the
+          customer and the route the driver took, with links to copy. This was
+          a live map with the customer pin and the driver's dot only. */}
+      <div className="bg-card border border-sand-200 rounded-2xl shadow-soft p-5 space-y-2">
+        <OrderRouteMap
+          orderId={order.id}
+          scope="vendor"
+          height={260}
+          trackingUrl={order.trackingUrl}
+          live={active && driverPos ? { lat: driverPos.lat, lng: driverPos.lng } : null}
+        />
+        {active && driverPos && (
+          <p className="text-xs text-sand-600">
+            {order.driverPositionAt
+              ? t("vendorPortal.mapDriverLiveAt").replace(
+                  "{time}",
+                  formatTime(order.driverPositionAt, locale)
+                )
+              : t("vendorPortal.mapDriverLive")}
+          </p>
+        )}
+      </div>
 
       {/* Timeline */}
       <section className="bg-card border border-sand-200 rounded-2xl shadow-soft p-5">

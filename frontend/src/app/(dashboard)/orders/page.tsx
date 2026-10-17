@@ -461,6 +461,12 @@ export default function DeliveryOrdersPage() {
               </dl>
             </section>
 
+            {/* Revision 24 #13, client note (Osama, 15 Oct 2026): store pin,
+                customer pin and the driver's route, with links to copy. Moved
+                up from under the timeline heading, below the actions and the
+                candidate list, where it read as part of the event log. */}
+            <OrderRouteMap orderId={order.id} trackingUrl={order.trackingUrl} />
+
             {/* Actions */}
             {canAct && (
               <section className="flex items-center gap-2 flex-wrap">
@@ -586,11 +592,6 @@ export default function DeliveryOrdersPage() {
               <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 mb-2">
                 {t("dispatch.timeline")}
               </h3>
-              {/* Revision 24 #13: shop pin, customer pin and the driver's
-                  path, above the event list. */}
-              <div className="mb-4">
-                <OrderRouteMap orderId={order.id} />
-              </div>
               {timeline.length === 0 ? (
                 <p className="text-sm text-sand-600">{t("errors.noData")}</p>
               ) : (

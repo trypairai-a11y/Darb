@@ -182,6 +182,68 @@ describe("Vendor portal routes", () => {
 
   // ─── GET /orders/:id ───────────────────────────────────────────────────────
 
+  // Client note (Osama, 15 Oct 2026): the merchant's order map shows the
+  // shop, the customer and the path the driver took.
+  describe("GET /api/vendor/orders/:id/route", () => {
+    test("404 when the order is not this vendor's, and never reads GPS", async () => {
+      prisma.deliveryOrder.findFirst.mockResolvedValueOnce(null);
+      prisma.locationLog = prisma.locationLog ?? { findMany: jest.fn() };
+      prisma.locationLog.findMany = jest.fn();
+
+      const res = await request(makeApp()).get("/api/vendor/orders/o-foreign/route");
+
+      expect(res.status).toBe(404);
+      expect(prisma.deliveryOrder.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ id: "o-foreign", tenantId: "t-1", vendorId: "v-1", isTraining: false }),
+        })
+      );
+      expect(prisma.locationLog.findMany).not.toHaveBeenCalled();
+    });
+
+    test("returns the shop pin, customer pin and the driver's path for an owned order", async () => {
+      const assignedAt = new Date("2026-10-14T10:00:00Z");
+      const pickedUpAt = new Date("2026-10-14T10:10:00Z");
+      const deliveredAt = new Date("2026-10-14T10:30:00Z");
+      prisma.deliveryOrder.findFirst
+        .mockResolvedValueOnce({ id: "o-1" })
+        .mockResolvedValueOnce({
+          id: "o-1",
+          status: "DELIVERED",
+          driverId: "d-1",
+          dropoffLat: "29.3",
+          dropoffLng: "48.0",
+          dropoffAddress: "Block 1",
+          assignedAt,
+          arrivedAt: null,
+          pickedUpAt,
+          deliveredAt,
+          returnedAt: null,
+          cancelledAt: null,
+          updatedAt: deliveredAt,
+          driver: { id: "d-1", name: "Qadir" },
+          vendor: { name: "Burger Boulevard" },
+          branch: { name: "Salmiya", address: "Street 5", lat: "29.33", lng: "48.07" },
+        });
+      prisma.locationLog = prisma.locationLog ?? { findMany: jest.fn() };
+      prisma.locationLog.findMany = jest.fn().mockResolvedValueOnce([
+        { latitude: "29.31", longitude: "48.01", capturedAt: new Date("2026-10-14T10:05:00Z") },
+        { latitude: "29.32", longitude: "48.02", capturedAt: new Date("2026-10-14T10:15:00Z") },
+      ]);
+
+      const res = await request(makeApp()).get("/api/vendor/orders/o-1/route");
+
+      expect(res.status).toBe(200);
+      expect(res.body.pickup).toMatchObject({ lat: 29.33, lng: 48.07 });
+      expect(res.body.dropoff).toMatchObject({ lat: 29.3, lng: 48.0 });
+      expect(res.body.path.map((p: { leg: string }) => p.leg)).toEqual(["TO_PICKUP", "TO_DROPOFF"]);
+      // The second read (the route itself) stays inside the tenant.
+      expect(prisma.deliveryOrder.findFirst).toHaveBeenLastCalledWith(
+        expect.objectContaining({ where: { id: "o-1", tenantId: "t-1" } })
+      );
+    });
+  });
+
   describe("GET /api/vendor/orders/:id", () => {
     test("404 when the order does not belong to this vendor", async () => {
       prisma.deliveryOrder.findFirst.mockResolvedValueOnce(null);

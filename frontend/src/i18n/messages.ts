@@ -1388,6 +1388,7 @@ export interface Messages {
   };
   hq: { ops: string; compliance: string; finance: string; admin: string; opsTitle: string; opsSubtitle: string; tabLive: string; tabOrders: string; tabEquipment: string; tabZones: string; tabDriverTracking: string; tabShiftPlanning: string; tabDriverTraining: string; tabOnboarding: string; tabRequests: string; openRequests: string; openFull: string };
   rev24Ops: { selectAll: string; selectDriver: string; selectedCount: string; clearSelection: string; bulkConfirmTitle: string; bulkConfirmMessage: string; bulkFreezeTitle: string; bulkTrainTitle: string; bulkResultTitle: string; bulkResultSummary: string; bulkAllDone: string; bulkDone: string; bulkNotApplied: string; pendingClearance: string; routeTitle: string; routePickup: string; routeDropoff: string; routeToPickup: string; routeToDropoff: string; routeNoPath: string; routeNoPins: string };
+  orderMap: { title: string; store: string; customer: string; driverRoute: string; toStore: string; toCustomer: string; noRoute: string; noPins: string; loadFailed: string; copyLinks: string; copyStore: string; copyCustomer: string; copyRoute: string; copyTracking: string; copied: string; copyFailed: string; copyPrompt: string };
   terminationClearance: { title: string; clearedBody: string; clearedOn: string; clearedBy: string; clearedFinal: string; note: string; pendingBody: string; pendingOn: string; noneOutstanding: string; stillWithDriver: string; confirmItems: string; confirmNothing: string; notePlaceholder: string; saving: string; confirm: string; supervisorOnly: string; toastCleared: string; toastError: string; statusTerminated: string; statusPending: string };
   driverFile: { tabOverview: string; tabWork: string; tabTraining: string; tabMoney: string; tabCompliance: string; tabNotes: string; notSet: string; back: string; notFound: string; loadError: string; phone: string; liveStatus: string; onlineNow: string; offline: string; score: string; todayOrders: string; weekOrders: string; cashDue: string; violations: string; profile: string; driverId: string; company: string; supervisor: string; zone: string; batch: string; hireDate: string; avgMonthlySalary: string; civilId: string; civilIdExpiry: string; batchHistory: string; noBatchChanges: string; changed: string; currentBatch: string; scoreTrend: string; noTrend: string; scorePreparing: string; outOf100: string; attendance: string; delivery: string; financial: string; equipment: string; platform: string; askWhy: string; darbRead: string; closeDrawer: string; thinking: string; explainError: string; explainUnavailable: string; cached: string; fresh: string; refresh: string; refreshAria: string; issuedEquipment: string; noEquipment: string; returnedOn: string; issuedOn: string; issueDateMissing: string; withDriver: string; returned: string; recentShifts: string; noShifts: string; date: string; time: string; timeRange: string; status: string; recentOrders: string; noOrders: string; restaurant: string; orders: string; cash: string; arrival: string; trainingSessions: string; loadingTraining: string; noTraining: string; finished: string; period: string; oneDay: string; days: string; result: string; passed: string; didNotPass: string; delivered: string; deliveredOf: string; onTime: string; avgMinutes: string; coach: string; note: string; cashPosition: string; outstanding: string; todayCash: string; weekCash: string; cashRecords: string; noCashRecords: string; sales: string; collected: string; due: string; documents: string; noViolations: string; type: string; appeal: string; restrictions: string; noRestrictions: string; start: string; end: string; permanent: string; state: string; active: string; closed: string; penalties: string; noPenalties: string; value: string; tickets: string; noTickets: string; ticket: string; ticketTitle: string; priority: string; agentNotes: string; noNotes: string; recentDecisions: string; noDecisions: string; vehicleCare: string; noInspections: string; noMaintenance: string; workCol: string; cost: string; equipmentReturn: string; equipmentReplace: string; equipmentCancel: string; equipmentReturnTitle: string; equipmentReplaceTitle: string; equipmentQuantity: string; equipmentQuantityOf: string; equipmentConditionReturned: string; equipmentConditionOld: string; conditionOkOption: string; conditionDamagedOption: string; conditionLostOption: string; equipmentNotePlaceholder: string; equipmentConfirmReturn: string; equipmentConfirmReplace: string; equipmentSaving: string; equipmentReturnedToast: string; equipmentReplacedToast: string; equipmentActionError: string; equipmentNoStock: string; equipmentChanged: string; reportedDamaged: string; reportedChanged: string; reportedChangeRequested: string; equipmentHistory: string; loadingEquipmentHistory: string; noEquipmentHistory: string; historyItem: string; historyAction: string; historyQuantity: string; historyCondition: string; historyBy: string; eventIssued: string; eventReturned: string; eventReplaced: string; eventCleared: string; conditionOk: string; conditionDamaged: string; conditionLost: string; };
   driverTracking: { title: string; subtitle: string; windowDays: string; driver: string; company: string; area: string; state: string; delivered: string; failed: string; onTime: string; acceptance: string; rating: string; documents: string; lastSeen: string; actions: string; activate: string; deactivate: string; suspend: string; freeze: string; unfreeze: string; sendToTraining: string; frozen: string; inTraining: string; freezeReason: string; freezeReasonHint: string; trainingPeriod: string; days: string; oneDay: string; trainingReason: string; sent: string; stateSaved: string; empty: string; searchPlaceholder: string; allCompanies: string; allAreas: string; allStates: string; inTrainingBlocked: string; passTraining: string; failTraining: string; finishTrainingTitle: string; passTrainingConfirm: string; failTrainingConfirm: string; trainingFinished: string; violations: string; violationsHint: string; rejections: string; rejectionsHint: string; openIssues: string; filterBy: string; filterAny: string; filterNone: string; filterAtLeast: string; filterBelow: string; filterBetween: string; filterNotRated: string; docsComplete: string; docsMissing: string; clearFilters: string; sortHint: string; matching: string; stateActive: string; stateInactive: string; stateSuspended: string; stateTerminated: string };
@@ -4090,6 +4091,25 @@ export const en: Messages = {
     routeToDropoff: "Driver to customer",
     routeNoPath: "No driver path recorded for this order.",
     routeNoPins: "No locations on file for this order.",
+  },
+  orderMap: {
+    title: "Order map",
+    store: "Store",
+    customer: "Customer",
+    driverRoute: "Driver route",
+    toStore: "Driver to store",
+    toCustomer: "Driver to customer",
+    noRoute: "No driver route recorded yet.",
+    noPins: "No store or customer location on file for this order.",
+    loadFailed: "Could not load the order map.",
+    copyLinks: "Copy link",
+    copyStore: "Store location",
+    copyCustomer: "Customer location",
+    copyRoute: "Route (store to customer)",
+    copyTracking: "Tracking link",
+    copied: "Link copied",
+    copyFailed: "Could not copy automatically. Copy the link from the box.",
+    copyPrompt: "Copy this link:",
   },
   terminationClearance: {
     title: "Equipment clearance",
@@ -7606,6 +7626,25 @@ export const ar: Messages = {
     routeToDropoff: "المندوب إلى العميل",
     routeNoPath: "لا يوجد مسار مسجَّل للمندوب لهذا الطلب.",
     routeNoPins: "لا توجد مواقع مسجَّلة لهذا الطلب.",
+  },
+  orderMap: {
+    title: "خريطة الطلب",
+    store: "المتجر",
+    customer: "العميل",
+    driverRoute: "مسار المندوب",
+    toStore: "المندوب إلى المتجر",
+    toCustomer: "المندوب إلى العميل",
+    noRoute: "لم يُسجَّل مسار للمندوب بعد.",
+    noPins: "لا يوجد موقع مسجَّل للمتجر أو العميل لهذا الطلب.",
+    loadFailed: "تعذّر تحميل خريطة الطلب.",
+    copyLinks: "نسخ الرابط",
+    copyStore: "موقع المتجر",
+    copyCustomer: "موقع العميل",
+    copyRoute: "المسار (من المتجر إلى العميل)",
+    copyTracking: "رابط التتبع",
+    copied: "تم نسخ الرابط",
+    copyFailed: "تعذّر النسخ تلقائيًا. انسخ الرابط من المربع.",
+    copyPrompt: "انسخ هذا الرابط:",
   },
   terminationClearance: {
     title: "تسوية العُهدة",
