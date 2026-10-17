@@ -263,6 +263,20 @@ export default function OrderOpsPanel({
               </section>
             )}
 
+            {/* Revision 24 #13, client note (Osama, 15 Oct 2026): store pin,
+                customer pin and the driver's route, with links to copy. It sat
+                inside the timeline block, so it did not render at all until
+                (or unless) the order's events had loaded. */}
+            <OrderRouteMap
+              orderId={order.id}
+              trackingUrl={order.trackingUrl}
+              live={
+                driverPosition && !TERMINAL.includes(order.status)
+                  ? { lat: driverPosition.lat, lng: driverPosition.lng }
+                  : null
+              }
+            />
+
             {/* Actions */}
             {canAct && (
               <section className="flex items-center gap-2 flex-wrap">
@@ -361,10 +375,6 @@ export default function OrderOpsPanel({
                 <h3 className="text-xs uppercase tracking-wide font-medium text-sand-600 mb-2">
                   {t("dispatch.timeline")}
                 </h3>
-                {/* Revision 24 #13: the route on a map above the event list. */}
-                <div className="mb-4">
-                  <OrderRouteMap orderId={order.id} />
-                </div>
                 <ol className="space-y-0">
                   {timeline.map((ev, i) => (
                     <li key={ev.id ?? i} className="relative flex gap-3 pb-4 last:pb-0">

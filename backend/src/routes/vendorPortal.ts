@@ -9,6 +9,7 @@ import { Prisma } from "../generated/prisma";
 import { prisma } from "../config";
 import { parseLocalDate, parseLocalDateEnd } from "../utils/date";
 import { trackingUrl } from "../services/customerMessagingService";
+import { orderRoute } from "../services/orderRouteService";
 import { authMiddleware } from "../middleware/auth";
 import { tenantScope } from "../middleware/tenantScope";
 import { rbac } from "../middleware/rbac";
@@ -1021,6 +1022,42 @@ router.get("/orders/:id", requireVendorTab("ORDERS"), async (req: Request, res: 
       driverPositionAt: live.at,
       etaMin: live.etaMin,
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/vendor/orders/{id}/route:
+ *   get:
+ *     tags: [Vendor Portal]
+ *     summary: The order's map (shop pin, customer pin, driver GPS path)
+ *     description: >
+ *       Client note (Osama, 15 Oct 2026): "the order map must show the route
+ *       the driver took and the store + customer location". The merchant's map
+ *       only had the customer pin and the driver's live dot. Same payload as
+ *       GET /api/delivery-orders/:id/route, behind the same vendor and branch
+ *       scope as the order detail above.
+ */
+router.get("/orders/:id/route", requireVendorTab("ORDERS"), async (req: Request, res: Response) => {
+  try {
+    const { tenantId, vendorId } = req.user!;
+    const branchId = scopedBranchId(req);
+    const owned = await prisma.deliveryOrder.findFirst({
+      where: {
+        id: req.params.id,
+        tenantId,
+        vendorId: vendorId!,
+        isTraining: false,
+        ...(branchId ? { branchId } : {}),
+      },
+      select: { id: true },
+    });
+    if (!owned) { res.status(404).json({ error: "Order not found" }); return; }
+    const route = await orderRoute(tenantId, owned.id);
+    if (!route) { res.status(404).json({ error: "Order not found" }); return; }
+    res.json(route);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -27,6 +27,12 @@ function Fit({ points }: { points: [number, number][] }) {
   const map = useMap();
   const key = points.map((p) => p.join(",")).join(";");
   useEffect(() => {
+    // The map often mounts inside a sliding panel whose final size is not
+    // known yet; without this the tiles stop short and the fit is off.
+    const resize = window.setTimeout(() => map.invalidateSize(), 300);
+    return () => window.clearTimeout(resize);
+  }, [map]);
+  useEffect(() => {
     if (points.length === 0) return;
     if (points.length === 1) {
       map.setView(points[0]!, 14);
@@ -42,9 +48,11 @@ export interface OrderRouteMapInnerProps {
   route: OrderRoute;
   pickupLabel: string;
   dropoffLabel: string;
+  /** The driver's live fix, when the screen has a fresher one than the path. */
+  live?: { lat: number; lng: number } | null;
 }
 
-export default function OrderRouteMapInner({ route, pickupLabel, dropoffLabel }: OrderRouteMapInnerProps) {
+export default function OrderRouteMapInner({ route, pickupLabel, dropoffLabel, live }: OrderRouteMapInnerProps) {
   const toPickup = useMemo<[number, number][]>(
     () => route.path.filter((p) => p.leg === "TO_PICKUP").map((p) => [p.lat, p.lng]),
     [route.path],
@@ -60,10 +68,12 @@ export default function OrderRouteMapInner({ route, pickupLabel, dropoffLabel }:
     const pts: [number, number][] = route.path.map((p) => [p.lat, p.lng]);
     if (route.pickup) pts.push([route.pickup.lat, route.pickup.lng]);
     if (route.dropoff) pts.push([route.dropoff.lat, route.dropoff.lng]);
+    // The live dot is left out on purpose: it moves every few seconds, and
+    // refitting on each move would yank the map out from under the reader.
     return pts;
   }, [route]);
 
-  const last = route.path[route.path.length - 1];
+  const last = live ?? route.path[route.path.length - 1];
   const pickupIcon = useMemo(() => pinIcon(ROUTE_COLORS.pickup, "S"), []);
   const dropoffIcon = useMemo(() => pinIcon(ROUTE_COLORS.dropoff, "C"), []);
 

@@ -718,6 +718,8 @@ export const vendorApi = {
   // fell back to a four-step timeline derived from the order's own timestamps.
   order: (id: string) =>
     get<DeliveryOrder & { timeline?: DeliveryOrderEvent[] }>(`/api/vendor/orders/${id}`),
+  // Same shape as deliveryOrdersApi.route, scoped to this vendor (and branch).
+  orderRoute: (id: string) => get<OrderRoute>(`/api/vendor/orders/${id}/route`),
   // The backend takes the dropoff nested — zod strips unknown keys, so a flat
   // dropoffLat/dropoffLng silently loses the coordinates rather than erroring.
   createOrder: (body: {
