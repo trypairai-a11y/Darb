@@ -142,6 +142,22 @@ describe("fleet rate shape", () => {
     // No company behind the driver costs Darb no fleet fee.
     expect(estimatedOrderCostKwd(null, D("6"))).toBe(0);
   });
+
+  // Client note, 2026-10-15: per-vehicle base fee + per km.
+  test("a driver is priced on his vehicle's base and per km when the company set them", () => {
+    const rate = {
+      ...fleetRateOf({ flatFeePerOrderKwd: D("1.000"), perKmFeeKwd: null }),
+      vehicles: { MOTORCYCLE: { baseKwd: D("0.800"), perKmKwd: D("0.100") } },
+    };
+    // 0.800 + 0.100 x 6
+    expect(estimatedOrderCostKwd(rate, D("6"), null, "MOTORCYCLE")).toBeCloseTo(1.4, 3);
+    // A car has no vehicle rate: the company's flat base.
+    expect(estimatedOrderCostKwd(rate, D("6"), null, "CAR")).toBeCloseTo(1.0, 3);
+    // The vehicle's per km means it is paid for distance, so not flat.
+    expect(isFlatRateFleet(rate, "MOTORCYCLE")).toBe(false);
+    expect(isFlatRateFleet(rate, "CAR")).toBe(true);
+    expect(isFlatRateFleet(rate)).toBe(true);
+  });
 });
 
 // ─── #3: flat-rate companies only take same-zone orders ─────────────────────

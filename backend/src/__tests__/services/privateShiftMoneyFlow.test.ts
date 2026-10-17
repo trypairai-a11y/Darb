@@ -22,6 +22,8 @@ const {
   orderPayoutKwd,
   sumFleetPayout,
   vehicleBaseOf,
+  vehicleRateOf,
+  perKmApplies,
   generateFleetStatements,
   postFleetPayout,
 } = require("../../services/fleetService");
@@ -126,7 +128,12 @@ describe("per-vehicle per-order rates (#3)", () => {
     expect(data.totalKwd.toFixed(3)).toBe("4.100");
     expect(data.ordersKwd.toFixed(3)).toBe("4.100");
     expect(data.feePerOrderKwd.toFixed(3)).toBe("1.100");
-    expect(data.vehicleRates).toEqual({ CAR: "1.500", MOTORCYCLE: null });
+    expect(data.vehicleRates).toEqual({
+      CAR: { base: "1.500", perKm: null },
+      MOTORCYCLE: { base: null, perKm: null },
+    });
+    // Flat company, no vehicle per-km: no kilometres on the statement.
+    expect(data.totalKm).toBeNull();
   });
 
   test("no per-vehicle rate anywhere: no snapshot, the base as before", async () => {
@@ -154,6 +161,104 @@ describe("per-vehicle per-order rates (#3)", () => {
     expect(p.fleetVehicleRate.findMany).not.toHaveBeenCalled();
     const { data } = p.fleetPayoutStatement.create.mock.calls[0][0];
     expect(data.totalKwd.toFixed(3)).toBe("2.250");
+  });
+});
+
+// Client note, 2026-10-15 (Osama): "for the delivery company motorcycle and
+// car please make it as base fee and per kilometer for the per order".
+describe("per-vehicle base fee + per km (2026-10-15)", () => {
+  const flat = fleetRateOf({ flatFeePerOrderKwd: D("1.100"), perKmFeeKwd: null });
+  const perKm = fleetRateOf({ flatFeePerOrderKwd: D("0.700"), perKmFeeKwd: D("0.150") });
+  const V = (base: string | null, km: string | null) => ({
+    baseKwd: base == null ? null : D(base),
+    perKmKwd: km == null ? null : D(km),
+  });
+
+  test("the vehicle's base + its own per km x distance", () => {
+    // 0.800 + 0.100 x 5 on a company that is otherwise flat
+    expect(orderPayoutKwd(flat, D("5.000"), null, V("0.800", "0.100")).toFixed(3)).toBe("1.300");
+    // the vehicle's per km beats the company's: 0.700 + 0.100 x 4
+    expect(orderPayoutKwd(perKm, D("4.000"), null, V(null, "0.100")).toFixed(3)).toBe("1.100");
+  });
+
+  test("the vehicle's base with the company's per km when the vehicle has none", () => {
+    // 0.900 + 0.150 x 4
+    expect(orderPayoutKwd(perKm, D("4.000"), null, V("0.900", null)).toFixed(3)).toBe("1.500");
+  });
+
+  test("no per km anywhere is flat: the vehicle base alone", () => {
+    expect(orderPayoutKwd(flat, D("9.000"), null, V("1.250", null)).toFixed(3)).toBe("1.250");
+  });
+
+  test("an order with no distance pays the base alone", () => {
+    expect(orderPayoutKwd(flat, null, null, V("0.800", "0.100")).toFixed(3)).toBe("0.800");
+    expect(orderPayoutKwd(perKm, null, null, V(null, "0.100")).toFixed(3)).toBe("0.700");
+  });
+
+  test("SUBSCRIPTION still pays the shop fee", () => {
+    const sub = fleetRateOf({ flatFeePerOrderKwd: D("1.100"), commercialModel: "SUBSCRIPTION" });
+    expect(orderPayoutKwd(sub, D("5.000"), D("2.000"), V("0.800", "0.100")).toFixed(3)).toBe("2.000");
+  });
+
+  test("the snapshot reader accepts the old string shape and the new object shape", () => {
+    // Old statements: a bare base, no vehicle per km (the company's applies).
+    const old = vehicleRateOf({ MOTORCYCLE: "1.250", CAR: null }, "MOTORCYCLE");
+    expect(old.baseKwd.toFixed(3)).toBe("1.250");
+    expect(old.perKmKwd).toBeNull();
+    expect(vehicleRateOf({ MOTORCYCLE: "1.250", CAR: null }, "CAR")).toBeNull();
+    expect(orderPayoutKwd(perKm, D("4.000"), null, old).toFixed(3)).toBe("1.850");
+
+    const fresh = { MOTORCYCLE: { base: "0.800", perKm: "0.100" }, CAR: { base: null, perKm: "0.200" } };
+    const moto = vehicleRateOf(fresh, "MOTORCYCLE");
+    expect(moto.baseKwd.toFixed(3)).toBe("0.800");
+    expect(moto.perKmKwd.toFixed(3)).toBe("0.100");
+    const car = vehicleRateOf(fresh, "CAR");
+    expect(car.baseKwd).toBeNull();
+    expect(car.perKmKwd.toFixed(3)).toBe("0.200");
+    expect(vehicleBaseOf(fresh, "MOTORCYCLE").toFixed(3)).toBe("0.800");
+    expect(vehicleBaseOf(fresh, "CAR")).toBeNull();
+    expect(vehicleRateOf({ CAR: { base: null, perKm: null } }, "CAR")).toBeNull();
+    expect(vehicleRateOf({ CAR: { base: "x", perKm: "y" } }, "CAR")).toBeNull();
+
+    expect(perKmApplies(flat, { MOTORCYCLE: "1.250" })).toBe(false);
+    expect(perKmApplies(flat, fresh)).toBe(true);
+    expect(perKmApplies(perKm, null)).toBe(true);
+  });
+
+  test("sumFleetPayout mixes vehicle rates of both kinds line by line", () => {
+    const { totalKwd, totalKm, ordersMissingDistance } = sumFleetPayout(
+      flat,
+      [D("5.000"), null, D("2.000")],
+      undefined,
+      [V("0.800", "0.100"), V("0.800", "0.100"), D("1.400")],
+    );
+    // 1.300 + 0.800 (no distance) + 1.400 (bare base, flat company)
+    expect(totalKwd.toFixed(3)).toBe("3.500");
+    expect(totalKm.toFixed(3)).toBe("7.000");
+    expect(ordersMissingDistance).toBe(1);
+  });
+
+  test("the statement pays base + per km per vehicle and snapshots both halves", async () => {
+    const p = attach();
+    p.fleetPartner.findMany.mockResolvedValue([MARGIN_FLEET]);
+    p.fleetVehicleRate.findMany.mockResolvedValue([
+      { vehicleType: "MOTORCYCLE", perOrderKwd: D("0.800"), perKmKwd: D("0.100") },
+      { vehicleType: "CAR", perOrderKwd: D("1.200"), perKmKwd: null },
+    ]);
+    p.deliveryOrder.findMany.mockResolvedValue([
+      { distanceKm: D("5.000"), deliveryFeeKwd: D("2.000"), driver: { vehicleType: "MOTORCYCLE" } },
+      { distanceKm: D("3.000"), deliveryFeeKwd: D("2.000"), driver: { vehicleType: "CAR" } },
+    ]);
+    await generateFleetStatements("t-1", PERIOD);
+    const { data } = p.fleetPayoutStatement.create.mock.calls[0][0];
+    // 0.800 + 0.100 x 5 = 1.300, car flat 1.200
+    expect(data.totalKwd.toFixed(3)).toBe("2.500");
+    expect(data.vehicleRates).toEqual({
+      MOTORCYCLE: { base: "0.800", perKm: "0.100" },
+      CAR: { base: "1.200", perKm: null },
+    });
+    // A vehicle is paid per km, so the kilometres are on the statement.
+    expect(data.totalKm.toFixed(3)).toBe("8.000");
   });
 });
 

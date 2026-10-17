@@ -6,6 +6,7 @@
 import api from "@/lib/api";
 import type {
   FleetVehicleRates,
+  FleetVehicleRateRow,
   PrivateShift,
   PrivateShiftDetail,
   PrivateShiftList,
@@ -74,7 +75,7 @@ export const privateShiftsApi = {
   fleetRates: (fleetId: string) => get<FleetVehicleRates>(`/api/private-shifts/fleets/${fleetId}/vehicle-rates`),
   saveFleetRates: (
     fleetId: string,
-    rates: Array<{ vehicleType: VehicleType; perOrderKwd: string | null; perHourKwd: string | null }>,
+    rates: FleetVehicleRateRow[],
   ) => send<FleetVehicleRates>("put", `/api/private-shifts/fleets/${fleetId}/vehicle-rates`, { rates }),
   driverEligibility: (driverId: string) =>
     get<{ driverId: string; privateShiftEligible: boolean; vehicleType: VehicleType }>(
@@ -110,7 +111,7 @@ export const vendorPrivateShiftsApi = {
 export const fleetPrivateShiftsApi = {
   vehicleRates: () => get<FleetVehicleRates>("/api/fleet/vehicle-rates"),
   proposeVehicleRates: (body: {
-    rates: Array<{ vehicleType: VehicleType; perOrderKwd: string | null; perHourKwd: string | null }>;
+    rates: FleetVehicleRateRow[];
     reason?: string;
     documents: unknown[];
   }) => send<{ id: string; status: string }>("post", "/api/fleet/vehicle-rates", body),

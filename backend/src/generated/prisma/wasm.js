@@ -2300,6 +2300,7 @@ exports.Prisma.FleetVehicleRateScalarFieldEnum = {
   fleetPartnerId: 'fleetPartnerId',
   vehicleType: 'vehicleType',
   perOrderKwd: 'perOrderKwd',
+  perKmKwd: 'perKmKwd',
   perHourKwd: 'perHourKwd',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -57,6 +57,21 @@ export interface FleetRate {
   /** Client note, 2026-08-16. Absent means MARGIN; the key is only set on a
    *  SUBSCRIPTION company so a MARGIN rate is the same object it always was. */
   model?: FleetCommercialModel;
+  /** Client note, 2026-10-15: today's per-vehicle rates, keyed by vehicle
+   *  type. Only set by dispatch's loadFleetRates, which prices a candidate
+   *  driver on his own vehicle; a statement reads its snapshot instead. */
+  vehicles?: Record<string, VehicleRate>;
+}
+
+/**
+ * Client note, 2026-10-15 (Osama): "for the delivery company motorcycle and
+ * car please make it as base fee and per kilometer for the per order".
+ * One vehicle type's half of the deal: its own base fee and its own rate per
+ * kilometre. Either may be null, which falls back to the company-wide figure.
+ */
+export interface VehicleRate {
+  baseKwd: Prisma.Decimal | null;
+  perKmKwd: Prisma.Decimal | null;
 }
 
 export function fleetRateOf(fleet: {
@@ -94,10 +109,12 @@ export function orderPayoutKwd(
   rate: FleetRate,
   distanceKm: Prisma.Decimal | null,
   shopFeeKwd?: Prisma.Decimal | string | number | null,
-  /** Revision 24b: the per-order rate of the driver's vehicle type
-   *  (FleetVehicleRate.perOrderKwd). Replaces the base on a MARGIN company;
-   *  null/undefined = the company-wide base, as before. */
-  vehicleBaseKwd?: Prisma.Decimal | null,
+  /** Revision 24b: the rate of the driver's vehicle type. A bare Decimal is
+   *  the vehicle's base fee alone (FleetVehicleRate.perOrderKwd), as before.
+   *  A VehicleRate (client note, 2026-10-15) also carries the vehicle's own
+   *  per-km rate. Each half replaces the company-wide one on a MARGIN company
+   *  when set; null/undefined = the company-wide figure. */
+  vehicle?: Prisma.Decimal | VehicleRate | null,
 ): Prisma.Decimal {
   // Client note, 2026-08-16. On SUBSCRIPTION the company is paid what the shop
   // was charged for this order, base and kilometres do not apply. An order
@@ -107,9 +124,27 @@ export function orderPayoutKwd(
   if (rate.model === "SUBSCRIPTION") {
     return new Prisma.Decimal((shopFeeKwd ?? 0) as Prisma.Decimal.Value).toDecimalPlaces(3);
   }
-  const base = vehicleBaseKwd ?? rate.baseKwd;
-  if (rate.perKmKwd == null || distanceKm == null) return base;
-  return base.plus(rate.perKmKwd.mul(distanceKm)).toDecimalPlaces(3);
+  const v = asVehicleRate(vehicle);
+  const base = v?.baseKwd ?? rate.baseKwd;
+  const perKm = v?.perKmKwd ?? rate.perKmKwd;
+  if (perKm == null || distanceKm == null) return base;
+  return base.plus(perKm.mul(distanceKm)).toDecimalPlaces(3);
+}
+
+function asVehicleRate(v: Prisma.Decimal | VehicleRate | null | undefined): VehicleRate | null {
+  if (v == null) return null;
+  if (Prisma.Decimal.isDecimal(v)) return { baseKwd: v as Prisma.Decimal, perKmKwd: null };
+  return v as VehicleRate;
+}
+
+/** The per-km rate an order on this vehicle is paid at: the vehicle's own,
+ *  else the company's, else null (flat). */
+export function effectivePerKmKwd(
+  rate: FleetRate,
+  vehicle?: Prisma.Decimal | VehicleRate | null,
+): Prisma.Decimal | null {
+  if (rate.model === "SUBSCRIPTION") return null;
+  return asVehicleRate(vehicle)?.perKmKwd ?? rate.perKmKwd;
 }
 
 /**
@@ -128,9 +163,9 @@ export function sumFleetPayout(
   /** Client note, 2026-08-16: the shop fee of each order, index-aligned with
    *  `distances`. Only read on a SUBSCRIPTION rate. */
   shopFees?: Array<Prisma.Decimal | string | number | null>,
-  /** Revision 24b: the per-vehicle per-order rate of each order, index-aligned.
-   *  Only read on a MARGIN rate. */
-  vehicleBases?: Array<Prisma.Decimal | null>,
+  /** Revision 24b: the per-vehicle rate of each order, index-aligned (a bare
+   *  base, or base + per km since 2026-10-15). Only read on a MARGIN rate. */
+  vehicleBases?: Array<Prisma.Decimal | VehicleRate | null>,
 ): { totalKwd: Prisma.Decimal; totalKm: Prisma.Decimal; ordersMissingDistance: number } {
   let totalKwd = new Prisma.Decimal(0);
   let totalKm = new Prisma.Decimal(0);
@@ -153,10 +188,17 @@ export function sumFleetPayout(
 /**
  * Revision 24 (#10) gave a delivery company a per-order rate per vehicle type
  * (`FleetVehicleRate.perOrderKwd`); revision 24b pays it. A snapshot of the
- * company's rates, `{ MOTORCYCLE: "1.250", CAR: null }`, is what a statement
- * stores, so a rate approved after the cut never redraws a month.
+ * company's rates is what a statement stores, so a rate approved after the
+ * cut never redraws a month.
+ *
+ * Two shapes are on file. Statements cut before 2026-10-15 hold the base
+ * alone, `{ MOTORCYCLE: "1.250", CAR: null }`. Since the client asked for a
+ * base fee plus a per-km rate per vehicle, each entry is
+ * `{ base: "1.250", perKm: "0.100" }`. The readers below accept both: an old
+ * string entry is the base with no vehicle per-km (the company's applies).
  */
-export type VehicleRateSnapshot = Record<string, string | null>;
+export type VehicleRateSnapshotEntry = string | null | { base: string | null; perKm: string | null };
+export type VehicleRateSnapshot = Record<string, VehicleRateSnapshotEntry>;
 
 export async function loadVehicleRateSnapshot(
   tenantId: string,
@@ -164,28 +206,66 @@ export async function loadVehicleRateSnapshot(
 ): Promise<VehicleRateSnapshot | null> {
   const rows = await prisma.fleetVehicleRate.findMany({
     where: { tenantId, fleetPartnerId },
-    select: { vehicleType: true, perOrderKwd: true },
+    select: { vehicleType: true, perOrderKwd: true, perKmKwd: true },
   });
+  const fixed = (v: Prisma.Decimal.Value | null | undefined) =>
+    v == null ? null : new Prisma.Decimal(v).toFixed(3);
   const snapshot: VehicleRateSnapshot = {};
+  let any = false;
   for (const r of rows) {
-    snapshot[r.vehicleType] = r.perOrderKwd == null ? null : new Prisma.Decimal(r.perOrderKwd).toFixed(3);
+    const base = fixed(r.perOrderKwd);
+    const perKm = fixed(r.perKmKwd);
+    if (base != null || perKm != null) any = true;
+    snapshot[r.vehicleType] = { base, perKm };
   }
-  return Object.values(snapshot).some((v) => v != null) ? snapshot : null;
+  return any ? snapshot : null;
 }
 
-/** The per-order rate a driver of this vehicle type is paid at, or null for the base. */
-export function vehicleBaseOf(
-  snapshot: unknown,
-  vehicleType: string | null | undefined,
-): Prisma.Decimal | null {
-  if (!snapshot || typeof snapshot !== "object" || !vehicleType) return null;
-  const v = (snapshot as Record<string, unknown>)[vehicleType];
+function readDecimal(v: unknown): Prisma.Decimal | null {
   if (v == null || v === "") return null;
   try {
     return new Prisma.Decimal(v as Prisma.Decimal.Value);
   } catch {
     return null;
   }
+}
+
+/** A vehicle type's rate from a snapshot of either shape, or null when it has none. */
+export function vehicleRateOf(
+  snapshot: unknown,
+  vehicleType: string | null | undefined,
+): VehicleRate | null {
+  if (!snapshot || typeof snapshot !== "object" || !vehicleType) return null;
+  const v = (snapshot as Record<string, unknown>)[vehicleType];
+  if (v == null) return null;
+  if (typeof v === "object") {
+    const o = v as { base?: unknown; perKm?: unknown };
+    const baseKwd = readDecimal(o.base);
+    const perKmKwd = readDecimal(o.perKm);
+    return baseKwd == null && perKmKwd == null ? null : { baseKwd, perKmKwd };
+  }
+  const baseKwd = readDecimal(v);
+  return baseKwd == null ? null : { baseKwd, perKmKwd: null };
+}
+
+/** The per-order base a driver of this vehicle type is paid at, or null for the company base. */
+export function vehicleBaseOf(
+  snapshot: unknown,
+  vehicleType: string | null | undefined,
+): Prisma.Decimal | null {
+  return vehicleRateOf(snapshot, vehicleType)?.baseKwd ?? null;
+}
+
+/** True when any vehicle in the snapshot carries its own per-km rate. */
+export function snapshotHasPerKm(snapshot: unknown): boolean {
+  if (!snapshot || typeof snapshot !== "object") return false;
+  return Object.keys(snapshot as object).some((k) => vehicleRateOf(snapshot, k)?.perKmKwd != null);
+}
+
+/** True when kilometres earn money on this rate: the company's per-km rate or any vehicle's. */
+export function perKmApplies(rate: FleetRate, snapshot: unknown): boolean {
+  if (rate.model === "SUBSCRIPTION") return false;
+  return rate.perKmKwd != null || snapshotHasPerKm(snapshot);
 }
 
 /**
@@ -555,13 +635,14 @@ export async function generateFleetStatements(
       const rate = fleetRateOf(fleet);
       // Revision 24b — a MARGIN company is paid each order at the per-order
       // rate of the driver's vehicle type when it has one, the base when it
-      // is blank. SUBSCRIPTION keeps paying the shop's fee (revision 23).
+      // is blank. Since 2026-10-15 the vehicle's own per-km rate too, else
+      // the company's. SUBSCRIPTION keeps paying the shop's fee (revision 23).
       const vehicleRates = isSubscriptionRate(rate) ? null : await loadVehicleRateSnapshot(tenantId, fleet.id);
       const { totalKwd: ordersKwd, totalKm } = sumFleetPayout(
         rate,
         rows.map((r) => r.distanceKm),
         rows.map((r) => r.deliveryFeeKwd),
-        rows.map((r) => vehicleBaseOf(vehicleRates, r.driver?.vehicleType)),
+        rows.map((r) => vehicleRateOf(vehicleRates, r.driver?.vehicleType)),
       );
 
       // Revision 24b — the company's private shifts, paid by the hour on the
@@ -651,7 +732,7 @@ export async function generateFleetStatements(
           deliveredOrders: rows.length,
           feePerOrderKwd: rate.baseKwd,
           perKmFeeKwd: rate.perKmKwd,
-          totalKm: rate.perKmKwd == null ? null : totalKm,
+          totalKm: perKmApplies(rate, vehicleRates) ? totalKm : null,
           totalKwd,
           ...shiftFields,
           ...(vehicleRates ? { vehicleRates } : {}),

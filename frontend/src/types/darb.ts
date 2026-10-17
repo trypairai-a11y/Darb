@@ -1297,9 +1297,19 @@ export interface FleetStatementRow {
   privateShiftCount?: number;
   privateShiftMinutes?: number;
   privateShiftPayKwd?: string;
-  /** Revision 24b — per-vehicle per-order rates the month was cut on. */
-  vehicleRates?: Record<string, string | null> | null;
+  /** Revision 24b — per-vehicle rates the month was cut on. A bare string is
+   *  a base fee (statements cut before 2026-10-15); an object carries the
+   *  base fee and the per km rate. */
+  vehicleRates?: VehicleRateSnapshot | null;
+  /** Client note, 2026-10-15 — true when kilometres earn money on this
+   *  statement (company per km, or any vehicle's). Detail endpoint only. */
+  perKmApplies?: boolean;
 }
+
+export type VehicleRateSnapshot = Record<
+  string,
+  string | null | { base: string | null; perKm: string | null }
+>;
 
 /**
  * Revision 13b (client note) — what one payout statement was built from.
@@ -1325,6 +1335,8 @@ export interface FleetStatementDetail {
      *  Null on a SUBSCRIPTION month, where the line is the shop fee. */
     vehicleType?: string | null;
     rateKwd?: string | null;
+    /** Client note, 2026-10-15 — the per km rate this line was paid at. */
+    perKmKwd?: string | null;
     feeKwd: string;
   }>;
   /** Revision 24b — the private shifts this statement pays, by the hour. */
@@ -1354,6 +1366,8 @@ export interface FleetStatementDetail {
     totalKwd: string;
     /** Revision 24b — the per-order rate this driver's orders were paid at. */
     rateKwd?: string | null;
+    /** Client note, 2026-10-15 — and the per km rate. */
+    perKmKwd?: string | null;
   }>;
   /** What the statement was cut on, and what the query returns today. A gap
    *  means orders were re-stated after the month closed. */
@@ -1426,7 +1440,9 @@ export interface FleetEarnings {
   privateShiftCount?: number;
   privateShiftMinutes?: number;
   privateShiftPayKwd?: string;
-  vehicleRates?: Record<string, string | null> | null;
+  vehicleRates?: VehicleRateSnapshot | null;
+  /** Client note, 2026-10-15 — kilometres earn money (company or any vehicle). */
+  perKmApplies?: boolean;
   totalKwd: string;
   listTruncated?: boolean;
   orders: Array<{
@@ -1436,6 +1452,7 @@ export interface FleetEarnings {
     driverName: string | null;
     distanceKm: string | null;
     rateKwd?: string | null;
+    perKmKwd?: string | null;
     feeKwd: string;
   }>;
 }

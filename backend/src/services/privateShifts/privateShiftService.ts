@@ -1055,7 +1055,12 @@ export async function getFleetVehicleRates(tenantId: string, fleetPartnerId: str
     perKmFeeKwd: money(fleet.perKmFeeKwd),
     rates: VEHICLE_TYPES.map((vehicleType) => {
       const row = rows.find((r) => r.vehicleType === vehicleType);
-      return { vehicleType, perOrderKwd: money(row?.perOrderKwd), perHourKwd: money(row?.perHourKwd) };
+      return {
+        vehicleType,
+        perOrderKwd: money(row?.perOrderKwd),
+        perKmKwd: money(row?.perKmKwd),
+        perHourKwd: money(row?.perHourKwd),
+      };
     }),
   };
 }
@@ -1067,7 +1072,12 @@ export function parseFleetVehicleRates(raw: unknown) {
     .filter((r) => isVehicleType(r.vehicleType))
     .map((r) => ({
       vehicleType: r.vehicleType as VehicleTypeValue,
-      perOrderKwd: readMoney(r.perOrderKwd, "a price per order", 50),
+      perOrderKwd: readMoney(r.perOrderKwd, "a base fee per order", 50),
+      // Client note, 2026-10-15: the vehicle's own rate per kilometre. A
+      // payload without the key (a proposal sent before it existed, still
+      // waiting on the desk) leaves the stored rate alone rather than
+      // clearing it on approval.
+      perKmKwd: "perKmKwd" in r ? readMoney(r.perKmKwd, "a rate per kilometre", 5) : undefined,
       perHourKwd: readMoney(r.perHourKwd, "an hourly rate", 100),
     }));
 }
@@ -1081,8 +1091,19 @@ export async function writeFleetVehicleRates(
   for (const r of rates) {
     await tx.fleetVehicleRate.upsert({
       where: { fleetPartnerId_vehicleType: { fleetPartnerId, vehicleType: r.vehicleType } },
-      create: { tenantId, fleetPartnerId, vehicleType: r.vehicleType, perOrderKwd: r.perOrderKwd, perHourKwd: r.perHourKwd },
-      update: { perOrderKwd: r.perOrderKwd, perHourKwd: r.perHourKwd },
+      create: {
+        tenantId,
+        fleetPartnerId,
+        vehicleType: r.vehicleType,
+        perOrderKwd: r.perOrderKwd,
+        perKmKwd: r.perKmKwd ?? null,
+        perHourKwd: r.perHourKwd,
+      },
+      update: {
+        perOrderKwd: r.perOrderKwd,
+        ...(r.perKmKwd !== undefined ? { perKmKwd: r.perKmKwd } : {}),
+        perHourKwd: r.perHourKwd,
+      },
     });
   }
 }

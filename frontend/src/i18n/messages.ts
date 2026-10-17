@@ -2630,7 +2630,7 @@ export interface Messages {
     cannotEditSelf: string;
   };
   /** Revision 24 (#8 to #11): private shifts. */
-  privateShifts: { title: string; navTitle: string; kindRegular: string; kindPrivate: string; subtitleStaff: string; subtitleVendor: string; prevDay: string; nextDay: string; day: string; planShifts: string; planHint: string; draftsTitle: string; openDraft: string; shiftsCount: string; fromShop: string; time: string; shop: string; branch: string; vehicle: string; status: string; driver: string; company: string; vendorCharge: string; fleetPay: string; noneOnDay: string; cancelShift: string; cancelTitle: string; cancelConfirm: string; cancelled: string; detailTitle: string; choose: string; noVehiclesStaff: string; noVehiclesVendor: string; howMany: string; hoursEach: string; hoursN: string; propose: string; draftTitle: string; draftHint: string; basisDefault: string; basisOrders: string; shiftN: string; startTime: string; removeShift: string; addShift: string; confirmWarning: string; confirm: string; saveDraft: string; discard: string; confirmed: string; saved: string; timeRange: string; minutes: string; billingTitle: string; settled: string; runningPreview: string; scheduled: string; lateDeduction: string; awayDeduction: string; billable: string; noRate: string; perHour: string; billingRule: string; deductionsTitle: string; noDeductions: string; kind_LATE_START: string; kind_LATE_ORDER: string; kind_AWAY: string; kind_EARLY_END: string; ordersTitle: string; kpiLine: string; status_PROPOSED: string; status_OPEN: string; status_BOOKED: string; status_IN_PROGRESS: string; status_COMPLETED: string; status_CANCELLED: string; vehicle_MOTORCYCLE: string; vehicle_CAR: string; vehiclePlansTitle: string; vehiclePlansHint: string; perOrderPlan: string; shopOwnPlan: string; perHourRate: string; perOrder: string; singleVehicleNote: string; plansSaved: string; fleetRatesTitle: string; fleetRatesMargin: string; fleetRatesSubscription: string; shopFee: string; ratesSaved: string; ratesProposed: string; ratesAwaiting: string; otherRateAwaiting: string; proposeRates: string; fleetShiftsTitle: string; fleetShiftsHint: string; fleetShiftsTotal: string; fleetShiftsNone: string; eligibleLabel: string; eligibleHint: string; eligibleOn: string; eligibleOff: string; charged: string; chargedNote: string; onFleetStatement: string; orderFee: string; orderFeeHint: string; };
+  privateShifts: { title: string; navTitle: string; kindRegular: string; kindPrivate: string; subtitleStaff: string; subtitleVendor: string; prevDay: string; nextDay: string; day: string; planShifts: string; planHint: string; draftsTitle: string; openDraft: string; shiftsCount: string; fromShop: string; time: string; shop: string; branch: string; vehicle: string; status: string; driver: string; company: string; vendorCharge: string; fleetPay: string; noneOnDay: string; cancelShift: string; cancelTitle: string; cancelConfirm: string; cancelled: string; detailTitle: string; choose: string; noVehiclesStaff: string; noVehiclesVendor: string; howMany: string; hoursEach: string; hoursN: string; propose: string; draftTitle: string; draftHint: string; basisDefault: string; basisOrders: string; shiftN: string; startTime: string; removeShift: string; addShift: string; confirmWarning: string; confirm: string; saveDraft: string; discard: string; confirmed: string; saved: string; timeRange: string; minutes: string; billingTitle: string; settled: string; runningPreview: string; scheduled: string; lateDeduction: string; awayDeduction: string; billable: string; noRate: string; perHour: string; billingRule: string; deductionsTitle: string; noDeductions: string; kind_LATE_START: string; kind_LATE_ORDER: string; kind_AWAY: string; kind_EARLY_END: string; ordersTitle: string; kpiLine: string; status_PROPOSED: string; status_OPEN: string; status_BOOKED: string; status_IN_PROGRESS: string; status_COMPLETED: string; status_CANCELLED: string; vehicle_MOTORCYCLE: string; vehicle_CAR: string; vehiclePlansTitle: string; vehiclePlansHint: string; perOrderPlan: string; shopOwnPlan: string; perHourRate: string; perOrder: string; baseFee: string; perKmRate: string; perHourShifts: string; perKmNone: string; fleetRatesFormula: string; singleVehicleNote: string; plansSaved: string; fleetRatesTitle: string; fleetRatesMargin: string; fleetRatesSubscription: string; shopFee: string; ratesSaved: string; ratesProposed: string; ratesAwaiting: string; otherRateAwaiting: string; proposeRates: string; fleetShiftsTitle: string; fleetShiftsHint: string; fleetShiftsTotal: string; fleetShiftsNone: string; eligibleLabel: string; eligibleHint: string; eligibleOn: string; eligibleOff: string; charged: string; chargedNote: string; onFleetStatement: string; orderFee: string; orderFeeHint: string; };
   vendorExtra: {
     analyticsTitle: string;
     analyticsSubtitle: string;
@@ -5859,7 +5859,7 @@ export const en: Messages = {
     billableHours: "Billable hours",
     rateUsed: "Rate per order",
     ordersCount: "{n} orders",
-    vehicleRateNote: "Each order is paid at the per-order rate of the driver's vehicle where one is set, otherwise at the base fee.",
+    vehicleRateNote: "Each order is paid the base fee of the driver's vehicle plus its per km rate times the distance. Where a vehicle has no rate of its own, the company's base fee and per km rate apply.",
   },
   fleetTeam: {
     title: "Team",
@@ -6127,10 +6127,15 @@ export const en: Messages = {
     shopOwnPlan: "The shop's own plan",
     perHourRate: "Per hour (KWD)",
     perOrder: "Per order (KWD)",
+    baseFee: "Base fee (KWD)",
+    perKmRate: "Per km (KWD)",
+    perHourShifts: "Per hour, private shifts (KWD)",
+    perKmNone: "none",
+    fleetRatesFormula: "Each order pays the base fee plus the per km rate times the order's distance. An order with no distance pays the base fee alone.",
     singleVehicleNote: "With one vehicle ticked, its per-order plan prices this shop's orders. Cars alone also makes the shop car-only.",
     plansSaved: "Vehicle plans saved",
     fleetRatesTitle: "Plans by vehicle",
-    fleetRatesMargin: "Per order: blank means the company's base price ({base}). Per hour pays private shifts.",
+    fleetRatesMargin: "A blank base fee means the company's base price ({base}). A blank per km means the company's rate ({perKm}). Per hour pays private shifts.",
     fleetRatesSubscription: "On a subscription the company is paid the shop's delivery fee per order, so only the hourly rate for private shifts applies.",
     shopFee: "Shop's fee",
     ratesSaved: "Rates saved",
@@ -9360,7 +9365,7 @@ export const ar: Messages = {
     billableHours: "الساعات المحتسبة",
     rateUsed: "السعر للطلب",
     ordersCount: "{n} طلب",
-    vehicleRateNote: "يُحتسب كل طلب بسعر الطلب المحدد لنوع مركبة السائق، وإن لم يُحدد فبالرسوم الأساسية.",
+    vehicleRateNote: "يُحتسب كل طلب بالرسوم الأساسية لمركبة السائق مضافًا إليها سعر الكيلومتر مضروبًا في المسافة. وإن لم يُحدَّد سعر للمركبة فتُطبَّق الرسوم الأساسية وسعر الكيلومتر الخاصان بالشركة.",
   },
   fleetTeam: {
     title: "الفريق",
@@ -9628,10 +9633,15 @@ export const ar: Messages = {
     shopOwnPlan: "خطة المتجر نفسه",
     perHourRate: "بالساعة (د.ك)",
     perOrder: "بالطلب (د.ك)",
+    baseFee: "الرسوم الأساسية (د.ك)",
+    perKmRate: "لكل كيلومتر (د.ك)",
+    perHourShifts: "بالساعة للورديات الخاصة (د.ك)",
+    perKmNone: "لا يوجد",
+    fleetRatesFormula: "يُدفع عن كل طلب الرسوم الأساسية مضافًا إليها سعر الكيلومتر مضروبًا في مسافة الطلب. والطلب الذي لا تُعرف مسافته تُدفع عنه الرسوم الأساسية فقط.",
     singleVehicleNote: "عند تحديد مركبة واحدة، تُسعَّر طلبات المتجر بخطتها بالطلب. وتحديد السيارة وحدها يجعل المتجر للسيارات فقط.",
     plansSaved: "تم حفظ خطط المركبات",
     fleetRatesTitle: "الخطط حسب المركبة",
-    fleetRatesMargin: "بالطلب: الخانة الفارغة تعني السعر الأساسي للشركة ({base}). السعر بالساعة للورديات الخاصة.",
+    fleetRatesMargin: "الرسوم الأساسية الفارغة تعني السعر الأساسي للشركة ({base}). وسعر الكيلومتر الفارغ يعني سعر الشركة ({perKm}). السعر بالساعة للورديات الخاصة.",
     fleetRatesSubscription: "في الاشتراك تستلم الشركة رسوم التوصيل من المتجر عن كل طلب، لذلك يُطبَّق السعر بالساعة للورديات الخاصة فقط.",
     shopFee: "رسوم المتجر",
     ratesSaved: "تم حفظ الأسعار",

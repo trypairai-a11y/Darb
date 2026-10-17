@@ -812,6 +812,9 @@ export type VendorVehiclePlan = $Result.DefaultSelection<Prisma.$VendorVehiclePl
  * What Darb pays a delivery company for one vehicle type (revision 24 #10):
  * per order (NULL = the company-wide base fee on FleetPartner) and per hour
  * (what a private shift on that vehicle pays the company).
+ * Client note, 2026-10-15 (Osama): an order is paid base + per km x distance
+ * per vehicle type. perOrderKwd is that base fee; perKmKwd NULL falls back to
+ * the company-wide FleetPartner.perKmFeeKwd (NULL there too = flat).
  */
 export type FleetVehicleRate = $Result.DefaultSelection<Prisma.$FleetVehicleRatePayload>
 /**
@@ -167349,11 +167352,13 @@ export namespace Prisma {
 
   export type FleetVehicleRateAvgAggregateOutputType = {
     perOrderKwd: Decimal | null
+    perKmKwd: Decimal | null
     perHourKwd: Decimal | null
   }
 
   export type FleetVehicleRateSumAggregateOutputType = {
     perOrderKwd: Decimal | null
+    perKmKwd: Decimal | null
     perHourKwd: Decimal | null
   }
 
@@ -167363,6 +167368,7 @@ export namespace Prisma {
     fleetPartnerId: string | null
     vehicleType: $Enums.VehicleType | null
     perOrderKwd: Decimal | null
+    perKmKwd: Decimal | null
     perHourKwd: Decimal | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -167374,6 +167380,7 @@ export namespace Prisma {
     fleetPartnerId: string | null
     vehicleType: $Enums.VehicleType | null
     perOrderKwd: Decimal | null
+    perKmKwd: Decimal | null
     perHourKwd: Decimal | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -167385,6 +167392,7 @@ export namespace Prisma {
     fleetPartnerId: number
     vehicleType: number
     perOrderKwd: number
+    perKmKwd: number
     perHourKwd: number
     createdAt: number
     updatedAt: number
@@ -167394,11 +167402,13 @@ export namespace Prisma {
 
   export type FleetVehicleRateAvgAggregateInputType = {
     perOrderKwd?: true
+    perKmKwd?: true
     perHourKwd?: true
   }
 
   export type FleetVehicleRateSumAggregateInputType = {
     perOrderKwd?: true
+    perKmKwd?: true
     perHourKwd?: true
   }
 
@@ -167408,6 +167418,7 @@ export namespace Prisma {
     fleetPartnerId?: true
     vehicleType?: true
     perOrderKwd?: true
+    perKmKwd?: true
     perHourKwd?: true
     createdAt?: true
     updatedAt?: true
@@ -167419,6 +167430,7 @@ export namespace Prisma {
     fleetPartnerId?: true
     vehicleType?: true
     perOrderKwd?: true
+    perKmKwd?: true
     perHourKwd?: true
     createdAt?: true
     updatedAt?: true
@@ -167430,6 +167442,7 @@ export namespace Prisma {
     fleetPartnerId?: true
     vehicleType?: true
     perOrderKwd?: true
+    perKmKwd?: true
     perHourKwd?: true
     createdAt?: true
     updatedAt?: true
@@ -167528,6 +167541,7 @@ export namespace Prisma {
     fleetPartnerId: string
     vehicleType: $Enums.VehicleType
     perOrderKwd: Decimal | null
+    perKmKwd: Decimal | null
     perHourKwd: Decimal | null
     createdAt: Date
     updatedAt: Date
@@ -167558,6 +167572,7 @@ export namespace Prisma {
     fleetPartnerId?: boolean
     vehicleType?: boolean
     perOrderKwd?: boolean
+    perKmKwd?: boolean
     perHourKwd?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -167569,6 +167584,7 @@ export namespace Prisma {
     fleetPartnerId?: boolean
     vehicleType?: boolean
     perOrderKwd?: boolean
+    perKmKwd?: boolean
     perHourKwd?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -167580,6 +167596,7 @@ export namespace Prisma {
     fleetPartnerId?: boolean
     vehicleType?: boolean
     perOrderKwd?: boolean
+    perKmKwd?: boolean
     perHourKwd?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -167595,6 +167612,7 @@ export namespace Prisma {
       fleetPartnerId: string
       vehicleType: $Enums.VehicleType
       perOrderKwd: Prisma.Decimal | null
+      perKmKwd: Prisma.Decimal | null
       perHourKwd: Prisma.Decimal | null
       createdAt: Date
       updatedAt: Date
@@ -167996,6 +168014,7 @@ export namespace Prisma {
     readonly fleetPartnerId: FieldRef<"FleetVehicleRate", 'String'>
     readonly vehicleType: FieldRef<"FleetVehicleRate", 'VehicleType'>
     readonly perOrderKwd: FieldRef<"FleetVehicleRate", 'Decimal'>
+    readonly perKmKwd: FieldRef<"FleetVehicleRate", 'Decimal'>
     readonly perHourKwd: FieldRef<"FleetVehicleRate", 'Decimal'>
     readonly createdAt: FieldRef<"FleetVehicleRate", 'DateTime'>
     readonly updatedAt: FieldRef<"FleetVehicleRate", 'DateTime'>
@@ -174409,6 +174428,7 @@ export namespace Prisma {
     fleetPartnerId: 'fleetPartnerId',
     vehicleType: 'vehicleType',
     perOrderKwd: 'perOrderKwd',
+    perKmKwd: 'perKmKwd',
     perHourKwd: 'perHourKwd',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -192087,6 +192107,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFilter<"FleetVehicleRate"> | string
     vehicleType?: EnumVehicleTypeFilter<"FleetVehicleRate"> | $Enums.VehicleType
     perOrderKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
     perHourKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
     updatedAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
@@ -192098,6 +192119,7 @@ export namespace Prisma {
     fleetPartnerId?: SortOrder
     vehicleType?: SortOrder
     perOrderKwd?: SortOrderInput | SortOrder
+    perKmKwd?: SortOrderInput | SortOrder
     perHourKwd?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -192114,6 +192136,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFilter<"FleetVehicleRate"> | string
     vehicleType?: EnumVehicleTypeFilter<"FleetVehicleRate"> | $Enums.VehicleType
     perOrderKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
     perHourKwd?: DecimalNullableFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
     updatedAt?: DateTimeFilter<"FleetVehicleRate"> | Date | string
@@ -192125,6 +192148,7 @@ export namespace Prisma {
     fleetPartnerId?: SortOrder
     vehicleType?: SortOrder
     perOrderKwd?: SortOrderInput | SortOrder
+    perKmKwd?: SortOrderInput | SortOrder
     perHourKwd?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -192144,6 +192168,7 @@ export namespace Prisma {
     fleetPartnerId?: StringWithAggregatesFilter<"FleetVehicleRate"> | string
     vehicleType?: EnumVehicleTypeWithAggregatesFilter<"FleetVehicleRate"> | $Enums.VehicleType
     perOrderKwd?: DecimalNullableWithAggregatesFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: DecimalNullableWithAggregatesFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
     perHourKwd?: DecimalNullableWithAggregatesFilter<"FleetVehicleRate"> | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeWithAggregatesFilter<"FleetVehicleRate"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FleetVehicleRate"> | Date | string
@@ -208641,6 +208666,7 @@ export namespace Prisma {
     fleetPartnerId: string
     vehicleType: $Enums.VehicleType
     perOrderKwd?: Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: Decimal | DecimalJsLike | number | string | null
     perHourKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -208652,6 +208678,7 @@ export namespace Prisma {
     fleetPartnerId: string
     vehicleType: $Enums.VehicleType
     perOrderKwd?: Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: Decimal | DecimalJsLike | number | string | null
     perHourKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -208663,6 +208690,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFieldUpdateOperationsInput | string
     vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
     perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -208674,6 +208702,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFieldUpdateOperationsInput | string
     vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
     perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -208685,6 +208714,7 @@ export namespace Prisma {
     fleetPartnerId: string
     vehicleType: $Enums.VehicleType
     perOrderKwd?: Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: Decimal | DecimalJsLike | number | string | null
     perHourKwd?: Decimal | DecimalJsLike | number | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -208696,6 +208726,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFieldUpdateOperationsInput | string
     vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
     perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -208707,6 +208738,7 @@ export namespace Prisma {
     fleetPartnerId?: StringFieldUpdateOperationsInput | string
     vehicleType?: EnumVehicleTypeFieldUpdateOperationsInput | $Enums.VehicleType
     perOrderKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    perKmKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     perHourKwd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -221013,6 +221045,7 @@ export namespace Prisma {
     fleetPartnerId?: SortOrder
     vehicleType?: SortOrder
     perOrderKwd?: SortOrder
+    perKmKwd?: SortOrder
     perHourKwd?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -221020,6 +221053,7 @@ export namespace Prisma {
 
   export type FleetVehicleRateAvgOrderByAggregateInput = {
     perOrderKwd?: SortOrder
+    perKmKwd?: SortOrder
     perHourKwd?: SortOrder
   }
 
@@ -221029,6 +221063,7 @@ export namespace Prisma {
     fleetPartnerId?: SortOrder
     vehicleType?: SortOrder
     perOrderKwd?: SortOrder
+    perKmKwd?: SortOrder
     perHourKwd?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -221040,6 +221075,7 @@ export namespace Prisma {
     fleetPartnerId?: SortOrder
     vehicleType?: SortOrder
     perOrderKwd?: SortOrder
+    perKmKwd?: SortOrder
     perHourKwd?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -221047,6 +221083,7 @@ export namespace Prisma {
 
   export type FleetVehicleRateSumOrderByAggregateInput = {
     perOrderKwd?: SortOrder
+    perKmKwd?: SortOrder
     perHourKwd?: SortOrder
   }
 

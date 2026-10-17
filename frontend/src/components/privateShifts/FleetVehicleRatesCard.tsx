@@ -13,6 +13,11 @@
 // Revision 23's commercial model decides what "per order" means here: on
 // MARGIN a blank per-order rate is the company's base fee; on SUBSCRIPTION the
 // company is paid the shop's fee per order, so only the hourly rate applies.
+//
+// Client note, 2026-10-15 (Osama): "for the delivery company motorcycle and
+// car please make it as base fee and per kilometer for the per order". On
+// MARGIN each order pays the vehicle's base fee plus its per km rate times
+// the distance; a blank per km falls back to the company-wide rate.
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DocumentFileField from "@/components/fleet/DocumentFileField";
@@ -25,7 +30,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { formatKwd } from "@/i18n/format";
 import { useRole } from "@/hooks/useRole";
 
-type Row = { vehicleType: VehicleType; perOrderKwd: string; perHourKwd: string };
+type Row = { vehicleType: VehicleType; perOrderKwd: string; perKmKwd: string; perHourKwd: string };
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? fallback;
@@ -55,7 +60,12 @@ export default function FleetVehicleRatesCard({ mode, fleetId }: { mode: "staff"
     setRows(
       VEHICLE_TYPES.map((v) => {
         const r = data.rates.find((x) => x.vehicleType === v);
-        return { vehicleType: v, perOrderKwd: r?.perOrderKwd ?? "", perHourKwd: r?.perHourKwd ?? "" };
+        return {
+          vehicleType: v,
+          perOrderKwd: r?.perOrderKwd ?? "",
+          perKmKwd: r?.perKmKwd ?? "",
+          perHourKwd: r?.perHourKwd ?? "",
+        };
       }),
     );
   }, [data]);
@@ -64,6 +74,7 @@ export default function FleetVehicleRatesCard({ mode, fleetId }: { mode: "staff"
     rows.map((r) => ({
       vehicleType: r.vehicleType,
       perOrderKwd: r.perOrderKwd.trim() || null,
+      perKmKwd: r.perKmKwd.trim() || null,
       perHourKwd: r.perHourKwd.trim() || null,
     }));
 
@@ -93,14 +104,24 @@ export default function FleetVehicleRatesCard({ mode, fleetId }: { mode: "staff"
   const canEdit = mode === "staff" ? hasRole("ADMIN") : !!data.canPropose && !data.pending;
   const inputsOn = mode === "staff" ? canEdit : editing;
   const money = (v: string | null | undefined) => (v ? formatKwd(v, locale) : "n/a");
+  const companyPerKm = data.perKmFeeKwd ? formatKwd(data.perKmFeeKwd, locale) : t("privateShifts.perKmNone");
+  const setField = (vehicleType: VehicleType, field: "perOrderKwd" | "perKmKwd" | "perHourKwd", value: string) =>
+    setRows((prev) => prev.map((x) => (x.vehicleType === vehicleType ? { ...x, [field]: value } : x)));
 
   return (
     <section className="bg-card border border-sand-200 rounded-2xl shadow-soft px-5 py-4" data-testid="fleet-vehicle-rates">
       <h2 className="text-sm font-medium text-sand-900">{t("privateShifts.fleetRatesTitle")}</h2>
+      {!subscription && (
+        <p className="text-xs text-sand-700 mt-1" data-testid="fleet-rates-formula">
+          {t("privateShifts.fleetRatesFormula")}
+        </p>
+      )}
       <p className="text-xs text-sand-600 mt-1">
         {subscription
           ? t("privateShifts.fleetRatesSubscription")
-          : t("privateShifts.fleetRatesMargin").replace("{base}", money(data.baseFeePerOrderKwd))}
+          : t("privateShifts.fleetRatesMargin")
+              .replace("{base}", money(data.baseFeePerOrderKwd))
+              .replace("{perKm}", companyPerKm)}
       </p>
 
       <div className="overflow-x-auto mt-3">
@@ -108,8 +129,9 @@ export default function FleetVehicleRatesCard({ mode, fleetId }: { mode: "staff"
           <thead className="text-sand-600">
             <tr>
               <th className="text-start font-medium py-2">{t("privateShifts.vehicle")}</th>
-              <th className="text-start font-medium py-2">{t("privateShifts.perOrder")}</th>
-              <th className="text-start font-medium py-2">{t("privateShifts.perHourRate")}</th>
+              <th className="text-start font-medium py-2">{t("privateShifts.baseFee")}</th>
+              <th className="text-start font-medium py-2">{t("privateShifts.perKmRate")}</th>
+              <th className="text-start font-medium py-2">{t("privateShifts.perHourShifts")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-sand-100">
@@ -127,14 +149,35 @@ export default function FleetVehicleRatesCard({ mode, fleetId }: { mode: "staff"
                       dir="ltr"
                       value={r.perOrderKwd}
                       placeholder={data.baseFeePerOrderKwd ?? "0.000"}
-                      onChange={(e) =>
-                        setRows((prev) => prev.map((x) => (x.vehicleType === r.vehicleType ? { ...x, perOrderKwd: e.target.value } : x)))
-                      }
+                      onChange={(e) => setField(r.vehicleType, "perOrderKwd", e.target.value)}
                       className="w-28 h-9 px-3 rounded-xl bg-white border border-sand-300 text-sm tabular-nums"
-                      aria-label={`${t("privateShifts.perOrder")} ${t(`privateShifts.vehicle_${r.vehicleType}`)}`}
+                      aria-label={`${t("privateShifts.baseFee")} ${t(`privateShifts.vehicle_${r.vehicleType}`)}`}
+                      data-testid={`fleet-base-${r.vehicleType}`}
                     />
                   ) : (
                     <span className="tabular-nums" dir="ltr">{money(r.perOrderKwd || data.baseFeePerOrderKwd)}</span>
+                  )}
+                </td>
+                <td className="py-2">
+                  {subscription ? (
+                    <span className="text-sand-500">{t("privateShifts.shopFee")}</span>
+                  ) : inputsOn ? (
+                    <input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      dir="ltr"
+                      value={r.perKmKwd}
+                      placeholder={data.perKmFeeKwd ?? "0.000"}
+                      onChange={(e) => setField(r.vehicleType, "perKmKwd", e.target.value)}
+                      className="w-28 h-9 px-3 rounded-xl bg-white border border-sand-300 text-sm tabular-nums"
+                      aria-label={`${t("privateShifts.perKmRate")} ${t(`privateShifts.vehicle_${r.vehicleType}`)}`}
+                      data-testid={`fleet-per-km-${r.vehicleType}`}
+                    />
+                  ) : (
+                    <span className="tabular-nums" dir="ltr">
+                      {r.perKmKwd || data.perKmFeeKwd ? money(r.perKmKwd || data.perKmFeeKwd) : t("privateShifts.perKmNone")}
+                    </span>
                   )}
                 </td>
                 <td className="py-2">
@@ -146,11 +189,9 @@ export default function FleetVehicleRatesCard({ mode, fleetId }: { mode: "staff"
                       dir="ltr"
                       value={r.perHourKwd}
                       placeholder="0.000"
-                      onChange={(e) =>
-                        setRows((prev) => prev.map((x) => (x.vehicleType === r.vehicleType ? { ...x, perHourKwd: e.target.value } : x)))
-                      }
+                      onChange={(e) => setField(r.vehicleType, "perHourKwd", e.target.value)}
                       className="w-28 h-9 px-3 rounded-xl bg-white border border-sand-300 text-sm tabular-nums"
-                      aria-label={`${t("privateShifts.perHourRate")} ${t(`privateShifts.vehicle_${r.vehicleType}`)}`}
+                      aria-label={`${t("privateShifts.perHourShifts")} ${t(`privateShifts.vehicle_${r.vehicleType}`)}`}
                       data-testid={`fleet-hourly-${r.vehicleType}`}
                     />
                   ) : (

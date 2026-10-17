@@ -392,6 +392,8 @@ export async function selectCandidates(
     lat: number;
     lng: number;
     fleetPartnerId: string | null;
+    /** Client note, 2026-10-15: priced at its own base fee and per-km rate. */
+    vehicleType: string | null;
     /** Revision 24 (#9): on a private shift at this order's branch. */
     privateShift?: boolean;
   };
@@ -422,6 +424,7 @@ export async function selectCandidates(
       lat,
       lng,
       fleetPartnerId: driver.fleetPartnerId ?? null,
+      vehicleType: driver.vehicleType ?? null,
       throttled:
         driver.throttledUntil != null && driver.throttledUntil.getTime() > Date.now(),
     });
@@ -463,7 +466,7 @@ export async function selectCandidates(
       if (c.privateShift) return true; // paid by the hour on a private shift
       if (!c.fleetPartnerId) return true; // no company behind them, no rate to break
       const rate = fleetRates.get(c.fleetPartnerId);
-      return !rate || !isFlatRateFleet(rate);
+      return !rate || !isFlatRateFleet(rate, c.vehicleType);
     });
     if (sameZoneOnly.length !== before) {
       logger.info(
@@ -481,7 +484,7 @@ export async function selectCandidates(
     (order as { deliveryFeeKwd?: Prisma.Decimal | null }).deliveryFeeKwd ?? null;
   for (const c of prelim) {
     const rate = c.fleetPartnerId ? (fleetRates.get(c.fleetPartnerId) ?? null) : null;
-    c.costKwd = estimatedOrderCostKwd(rate, orderDistanceKm, orderShopFeeKwd);
+    c.costKwd = estimatedOrderCostKwd(rate, orderDistanceKm, orderShopFeeKwd, c.vehicleType);
   }
 
   const driverIds = prelim.map((c) => c.driverId);

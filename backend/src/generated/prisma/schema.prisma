@@ -4899,12 +4899,16 @@ model VendorVehiclePlan {
 /// What Darb pays a delivery company for one vehicle type (revision 24 #10):
 /// per order (NULL = the company-wide base fee on FleetPartner) and per hour
 /// (what a private shift on that vehicle pays the company).
+/// Client note, 2026-10-15 (Osama): an order is paid base + per km x distance
+/// per vehicle type. perOrderKwd is that base fee; perKmKwd NULL falls back to
+/// the company-wide FleetPartner.perKmFeeKwd (NULL there too = flat).
 model FleetVehicleRate {
   id             String      @id @default(uuid())
   tenantId       String
   fleetPartnerId String
   vehicleType    VehicleType
   perOrderKwd    Decimal?    @db.Decimal(10, 3)
+  perKmKwd       Decimal?    @db.Decimal(10, 3)
   perHourKwd     Decimal?    @db.Decimal(10, 3)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt

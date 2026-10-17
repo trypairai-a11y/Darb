@@ -131,18 +131,28 @@ export interface VendorVehiclePlans {
   plans: Array<{ vehicleType: VehicleType; deliveryPlanId: string | null; perHourKwd: string | null }>;
 }
 
+export interface FleetVehicleRateRow {
+  vehicleType: VehicleType;
+  perOrderKwd: string | null;
+  /** Absent on a proposal sent before 2026-10-15. */
+  perKmKwd?: string | null;
+  perHourKwd: string | null;
+}
+
 export interface FleetVehicleRates {
   vehicleTypes: VehicleType[];
   commercialModel: string;
   baseFeePerOrderKwd: string | null;
   perKmFeeKwd: string | null;
-  rates: Array<{ vehicleType: VehicleType; perOrderKwd: string | null; perHourKwd: string | null }>;
+  /** perOrderKwd is the vehicle's base fee; perKmKwd its rate per km
+   *  (client note, 2026-10-15). Null = the company-wide figure. */
+  rates: FleetVehicleRateRow[];
   /** Fleet portal only. */
   canPropose?: boolean;
   pending?: {
     id: string;
     kind: "VEHICLE_RATES" | "BASE_RATE";
-    vehicleRates: Array<{ vehicleType: VehicleType; perOrderKwd: string | null; perHourKwd: string | null }> | null;
+    vehicleRates: FleetVehicleRateRow[] | null;
     reason: string | null;
     createdAt: string;
   } | null;

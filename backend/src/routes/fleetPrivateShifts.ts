@@ -111,6 +111,9 @@ export function registerFleetPrivateShiftRoutes(router: Router, h: FleetPortalHe
           vehicleRates: rates.map((r) => ({
             vehicleType: r.vehicleType,
             perOrderKwd: r.perOrderKwd?.toFixed(3) ?? null,
+            // Client note, 2026-10-15. Omitted when the form did not send it,
+            // so approving leaves the stored per-km rate as it is.
+            ...(r.perKmKwd !== undefined ? { perKmKwd: r.perKmKwd?.toFixed(3) ?? null } : {}),
             perHourKwd: r.perHourKwd?.toFixed(3) ?? null,
           })),
           // Carried so the approver sees what each number moves from.

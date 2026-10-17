@@ -17,6 +17,8 @@ const {
   endPrivateShift,
   startPrivateShift,
   saveVendorVehiclePlans,
+  parseFleetVehicleRates,
+  writeFleetVehicleRates,
 } = require("../../services/privateShifts/privateShiftService");
 
 const SHOP = { lat: 29.3759, lng: 47.9774 };
@@ -343,5 +345,34 @@ describe("vehicle checkboxes (#8)", () => {
         update: { deliveryPlanId: null, perHourKwd: new Prisma.Decimal("2.500") },
       }),
     );
+  });
+});
+
+// Client note, 2026-10-15: a base fee and a per-km rate per vehicle.
+describe("delivery company per-vehicle rates (2026-10-15)", () => {
+  test("base, per km and per hour are parsed per vehicle", () => {
+    const [moto] = parseFleetVehicleRates([
+      { vehicleType: "MOTORCYCLE", perOrderKwd: "0.8", perKmKwd: "0.1", perHourKwd: "2" },
+    ]);
+    expect(moto.perOrderKwd.toFixed(3)).toBe("0.800");
+    expect(moto.perKmKwd.toFixed(3)).toBe("0.100");
+    expect(moto.perHourKwd.toFixed(3)).toBe("2.000");
+  });
+
+  test("a blank per km clears it; a payload without the key leaves it alone", async () => {
+    const [blank] = parseFleetVehicleRates([{ vehicleType: "CAR", perOrderKwd: "1", perKmKwd: "" }]);
+    expect(blank.perKmKwd).toBeNull();
+    const [legacy] = parseFleetVehicleRates([{ vehicleType: "CAR", perOrderKwd: "1" }]);
+    expect(legacy.perKmKwd).toBeUndefined();
+
+    const upsert = jest.fn();
+    await writeFleetVehicleRates({ fleetVehicleRate: { upsert } } as any, "t-1", "f-1", [legacy, blank]);
+    expect(upsert.mock.calls[0][0].update).not.toHaveProperty("perKmKwd");
+    expect(upsert.mock.calls[0][0].create.perKmKwd).toBeNull();
+    expect(upsert.mock.calls[1][0].update.perKmKwd).toBeNull();
+  });
+
+  test("an absurd per-km rate is refused", () => {
+    expect(() => parseFleetVehicleRates([{ vehicleType: "CAR", perKmKwd: "50" }])).toThrow();
   });
 });

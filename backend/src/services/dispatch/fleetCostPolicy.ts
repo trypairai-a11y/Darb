@@ -20,7 +20,8 @@
 
 import { Prisma } from "../../generated/prisma";
 import { prisma } from "../../config";
-import { fleetRateOf, orderPayoutKwd, type FleetRate } from "../fleetService";
+import { logger } from "../../config/logger";
+import { fleetRateOf, orderPayoutKwd, type FleetRate, type VehicleRate } from "../fleetService";
 
 /**
  * A company paid a base fee and nothing for distance.
@@ -30,9 +31,18 @@ import { fleetRateOf, orderPayoutKwd, type FleetRate } from "../fleetService";
  * the distance on a by-kilometre plan, so a cross-zone order costs Darb no
  * margin and fencing the company out would only shrink the pool.
  */
-export function isFlatRateFleet(rate: FleetRate): boolean {
+export function isFlatRateFleet(rate: FleetRate, vehicleType?: string | null): boolean {
   if (rate.model === "SUBSCRIPTION") return false;
-  return rate.perKmKwd == null || rate.perKmKwd.isZero();
+  // Client note, 2026-10-15: a vehicle type can carry its own per-km rate,
+  // which is paid ahead of the company's. A driver whose vehicle has one is
+  // paid for distance even when the company-wide rate is blank.
+  const perKm = vehicleOf(rate, vehicleType)?.perKmKwd ?? rate.perKmKwd;
+  return perKm == null || perKm.isZero();
+}
+
+function vehicleOf(rate: FleetRate, vehicleType?: string | null): VehicleRate | null {
+  if (!vehicleType || !rate.vehicles) return null;
+  return rate.vehicles[vehicleType] ?? null;
 }
 
 /**
@@ -48,9 +58,12 @@ export function estimatedOrderCostKwd(
   rate: FleetRate | null,
   distanceKm: Prisma.Decimal | null,
   shopFeeKwd?: Prisma.Decimal | null,
+  /** Client note, 2026-10-15: the driver's vehicle, priced at its own base
+   *  fee and per-km rate when the company set them. */
+  vehicleType?: string | null,
 ): number {
   if (!rate) return 0;
-  return orderPayoutKwd(rate, distanceKm, shopFeeKwd).toNumber();
+  return orderPayoutKwd(rate, distanceKm, shopFeeKwd, vehicleOf(rate, vehicleType)).toNumber();
 }
 
 export interface FleetRateRow {
@@ -71,5 +84,36 @@ export async function loadFleetRates(
     where: { tenantId, id: { in: ids } },
     select: { id: true, flatFeePerOrderKwd: true, perKmFeeKwd: true, commercialModel: true },
   })) as unknown as FleetRateRow[];
-  return new Map(rows.map((r) => [r.id, fleetRateOf(r)]));
+  const rates = new Map(rows.map((r) => [r.id, fleetRateOf(r)]));
+
+  // Client note, 2026-10-15: each company's per-vehicle base fee and per-km
+  // rate. Read best-effort: a failure here prices the pool on the company
+  // rates, which is what it did before, rather than stopping dispatch.
+  try {
+    const vehicleRows =
+      ((await prisma.fleetVehicleRate.findMany({
+        where: { tenantId, fleetPartnerId: { in: ids } },
+        select: { fleetPartnerId: true, vehicleType: true, perOrderKwd: true, perKmKwd: true },
+      })) as Array<{
+        fleetPartnerId: string;
+        vehicleType: string;
+        perOrderKwd: Prisma.Decimal | null;
+        perKmKwd: Prisma.Decimal | null;
+      }> | undefined) ?? [];
+    for (const v of vehicleRows) {
+      const rate = rates.get(v.fleetPartnerId);
+      if (!rate || rate.model === "SUBSCRIPTION") continue;
+      if (v.perOrderKwd == null && v.perKmKwd == null) continue;
+      rate.vehicles = {
+        ...(rate.vehicles ?? {}),
+        [v.vehicleType]: {
+          baseKwd: v.perOrderKwd == null ? null : new Prisma.Decimal(v.perOrderKwd),
+          perKmKwd: v.perKmKwd == null ? null : new Prisma.Decimal(v.perKmKwd),
+        },
+      };
+    }
+  } catch (err) {
+    logger.warn({ err, tenantId }, "loadFleetRates: per-vehicle rates unreadable, using company rates");
+  }
+  return rates;
 }

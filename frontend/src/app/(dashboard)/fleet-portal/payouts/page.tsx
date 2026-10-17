@@ -28,13 +28,30 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/Toast";
 import { fleetApi } from "@/lib/darbApi";
 import { downloadCsv } from "@/lib/csv";
-import type { FleetInvoiceUpload, FleetStatementRow } from "@/types/darb";
+import type { FleetInvoiceUpload, FleetStatementRow, VehicleRateSnapshot } from "@/types/darb";
 import { useI18n } from "@/i18n/I18nProvider";
 import { formatDateTime, formatKwd, formatNumber, localeTag } from "@/i18n/format";
 
-/** Revision 24b: true when any vehicle type carries its own per-order rate. */
-function hasVehicleRates(rates: Record<string, string | null> | null | undefined): boolean {
-  return !!rates && Object.values(rates).some((v) => v != null);
+/** Revision 24b: true when any vehicle type carries its own rate. A snapshot
+ *  entry is a bare base fee (cut before 2026-10-15) or `{ base, perKm }`. */
+function hasVehicleRates(rates: VehicleRateSnapshot | null | undefined): boolean {
+  return (
+    !!rates &&
+    Object.values(rates).some((v) =>
+      v != null && typeof v === "object" ? v.base != null || v.perKm != null : v != null,
+    )
+  );
+}
+
+/** Client note, 2026-10-15: true when any vehicle type has its own per km rate. */
+function hasVehiclePerKm(rates: VehicleRateSnapshot | null | undefined): boolean {
+  return !!rates && Object.values(rates).some((v) => v != null && typeof v === "object" && v.perKm != null);
+}
+
+/** Kilometres earn money: the company's per km rate, or any vehicle's own. */
+function kmPaid(row: { perKmFeeKwd?: string | null; vehicleRates?: VehicleRateSnapshot | null; commercialModel?: string | null }): boolean {
+  if (row.commercialModel === "SUBSCRIPTION") return false;
+  return row.perKmFeeKwd != null || hasVehiclePerKm(row.vehicleRates);
 }
 
 export default function FleetPayoutsPage() {
@@ -46,6 +63,10 @@ export default function FleetPayoutsPage() {
   // per-vehicle rates; otherwise every line is the base and the box says so.
   const showRate =
     !!openRow && openRow.commercialModel !== "SUBSCRIPTION" && hasVehicleRates(openRow.vehicleRates);
+  const openKm = !!openRow && kmPaid(openRow);
+  // A line's rate: the base fee, plus its per km rate when it has one.
+  const rateText = (base: string | null | undefined, perKm: string | null | undefined) =>
+    base == null ? "n/a" : `${formatKwd(base, locale)}${perKm != null ? ` + ${formatKwd(perKm, locale)}/km` : ""}`;
   const [disputing, setDisputing] = useState<FleetStatementRow | null>(null);
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
@@ -183,7 +204,7 @@ export default function FleetPayoutsPage() {
     // The kilometre column appears only on a month that was cut with a
     // kilometre rate. Printing an empty column on a flat month would make the
     // stamped document ask a question it has no answer to.
-    const perKm = row.perKmFeeKwd != null;
+    const perKm = kmPaid(row);
     // Client note, 2026-08-16: the stamped document for a SUBSCRIPTION month
     // must show the monthly fee withheld and the net, or the company signs a
     // total it will not be paid.
@@ -225,8 +246,8 @@ export default function FleetPayoutsPage() {
 <div class="totals">
   <div><span>${esc(t("fleetPortal.orders"))}</span><b>${row.deliveredOrders}</b></div>
   ${subscription ? "" : `<div><span>${esc(t("fleetPortal.rateBaseLabel"))}</span><b>${esc(formatKwd(row.feePerOrderKwd, locale))}</b></div>`}
-  ${perKm ? `<div><span>${esc(t("fleetPortal.ratePerKmLabel"))}</span><b>${esc(formatKwd(row.perKmFeeKwd as string, locale))}</b></div>
-  <div><span>${esc(t("fleetPortal.totalDistance"))}</span><b>${esc(row.totalKm ?? "0")} km</b></div>` : ""}
+  ${perKm && row.perKmFeeKwd != null ? `<div><span>${esc(t("fleetPortal.ratePerKmLabel"))}</span><b>${esc(formatKwd(row.perKmFeeKwd, locale))}</b></div>` : ""}
+  ${perKm ? `<div><span>${esc(t("fleetPortal.totalDistance"))}</span><b>${esc(row.totalKm ?? "0")} km</b></div>` : ""}
   <div><span>${esc(t("fleetPortal.total"))}</span><b>${esc(formatKwd(row.totalKwd, locale))}</b></div>
   ${subscription ? `<div><span>${esc(t("fleetPortal.subscriptionDeducted"))}</span><b>- ${esc(formatKwd(row.deductionsKwd ?? "0", locale))}</b></div>
   <div><span>${esc(t("fleetPortal.netPayable"))}</span><b>${esc(formatKwd(row.netPayableKwd ?? row.totalKwd, locale))}</b></div>` : ""}
@@ -455,12 +476,21 @@ export default function FleetPayoutsPage() {
                     {formatKwd(earnings.feePerOrderKwd, locale)}
                   </>
                 )}
-                {earnings.perKmFeeKwd != null && (
+                {hasVehiclePerKm(earnings.vehicleRates) ? (
+                  // Client note, 2026-10-15: each vehicle has its own per km
+                  // rate, so the kilometres are listed without one rate.
                   <>
-                    {" + "}
-                    {formatNumber(Number(earnings.totalKm ?? 0), locale)} km x{" "}
-                    {formatKwd(earnings.perKmFeeKwd, locale)}
+                    {", "}
+                    {formatNumber(Number(earnings.totalKm ?? 0), locale)} km
                   </>
+                ) : (
+                  earnings.perKmFeeKwd != null && (
+                    <>
+                      {" + "}
+                      {formatNumber(Number(earnings.totalKm ?? 0), locale)} km x{" "}
+                      {formatKwd(earnings.perKmFeeKwd, locale)}
+                    </>
+                  )
                 )}{" "}
                 ={" "}
                 <span className="font-medium text-sand-900">
@@ -534,7 +564,7 @@ export default function FleetPayoutsPage() {
                         {t("fleetPortal.rateUsed")}
                       </th>
                     )}
-                    {earnings.perKmFeeKwd != null && (
+                    {(earnings.perKmApplies ?? earnings.perKmFeeKwd != null) && (
                       <th className="text-start text-xs font-medium text-secondary px-5 py-3">
                         {t("fleetPortal.distanceKm")}
                       </th>
@@ -554,10 +584,10 @@ export default function FleetPayoutsPage() {
                       </td>
                       {hasVehicleRates(earnings.vehicleRates) && (
                         <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
-                          {o.rateKwd == null ? "n/a" : formatKwd(o.rateKwd, locale)}
+                          {rateText(o.rateKwd, o.perKmKwd)}
                         </td>
                       )}
-                      {earnings.perKmFeeKwd != null && (
+                      {(earnings.perKmApplies ?? earnings.perKmFeeKwd != null) && (
                         <td dir="ltr" className="px-5 py-3 text-sm tabular-nums">
                           {o.distanceKm == null
                             ? "n/a"
@@ -627,7 +657,7 @@ export default function FleetPayoutsPage() {
             ) : (
             <div
               className={
-                openRow.perKmFeeKwd == null && !(openRow.privateShiftCount ?? 0)
+                !openKm && !(openRow.privateShiftCount ?? 0)
                   ? "grid grid-cols-3 gap-3"
                   : "grid grid-cols-2 sm:grid-cols-3 gap-3"
               }
@@ -644,13 +674,17 @@ export default function FleetPayoutsPage() {
                       },
                     ]
                   : []),
-                ...(openRow.perKmFeeKwd == null
+                ...(openRow.perKmFeeKwd == null || !openKm
                   ? []
                   : [
                       {
                         label: t("fleetPortal.ratePerKmLabel"),
                         value: formatKwd(openRow.perKmFeeKwd, locale),
                       },
+                    ]),
+                ...(!openKm
+                  ? []
+                  : [
                       {
                         label: t("fleetPortal.totalDistance"),
                         value: `${formatNumber(Number(openRow.totalKm ?? 0), locale)} km`,
@@ -753,7 +787,7 @@ export default function FleetPayoutsPage() {
                                 {t("fleetPortal.rateUsed")}
                               </th>
                             )}
-                            {openRow.perKmFeeKwd != null && (
+                            {openKm && (
                               <th className="text-end text-[11px] font-medium text-secondary px-3 py-2">
                                 {t("fleetPortal.distanceKm")}
                               </th>
@@ -775,10 +809,10 @@ export default function FleetPayoutsPage() {
                               </td>
                               {showRate && (
                                 <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
-                                  {d.rateKwd == null ? "n/a" : formatKwd(d.rateKwd, locale)}
+                                  {rateText(d.rateKwd, d.perKmKwd)}
                                 </td>
                               )}
-                              {openRow.perKmFeeKwd != null && (
+                              {openKm && (
                                 <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end">
                                   {d.totalKm == null
                                     ? "n/a"
@@ -801,7 +835,7 @@ export default function FleetPayoutsPage() {
                               {formatNumber(openRow.deliveredOrders, locale)}
                             </td>
                             {showRate && <td />}
-                            {openRow.perKmFeeKwd != null && (
+                            {openKm && (
                               <td dir="ltr" className="px-3 py-2 text-xs tabular-nums text-end font-medium">
                                 {formatNumber(Number(openRow.totalKm ?? 0), locale)}
                               </td>

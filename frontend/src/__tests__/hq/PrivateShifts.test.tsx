@@ -108,6 +108,28 @@ describe("vehicle rate proposal on the approval desk", () => {
     expect(line).toMatch(/fuel$/);
   });
 
+  it("carries the per km rate when the proposal has it (2026-10-15)", () => {
+    const line = vehicleRatesSummary(
+      {
+        vehicleRates: [{ vehicleType: "MOTORCYCLE", perOrderKwd: "0.800", perKmKwd: "0.100", perHourKwd: null }],
+        currentVehicleRates: [{ vehicleType: "MOTORCYCLE", perOrderKwd: "1.100", perKmKwd: null, perHourKwd: null }],
+      },
+      (k) => k,
+      "en",
+    );
+    expect(line).toMatch(/privateShifts\.baseFee .*1\.100.*→.*0\.800/);
+    expect(line).toMatch(/privateShifts\.perKmRate n\/a → .*0\.100/);
+  });
+
+  it("an older proposal without per km does not claim a per km change", () => {
+    const line = vehicleRatesSummary(
+      { vehicleRates: [{ vehicleType: "CAR", perOrderKwd: "1.500", perHourKwd: null }] },
+      (k) => k,
+      "en",
+    );
+    expect(line).not.toMatch(/perKmRate/);
+  });
+
   it("leaves an ordinary base-price proposal to the existing line", () => {
     expect(vehicleRatesSummary({ flatFeePerOrderKwd: "1.200" }, (k) => k, "en")).toBeNull();
   });

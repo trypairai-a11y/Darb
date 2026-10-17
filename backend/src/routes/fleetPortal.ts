@@ -21,6 +21,9 @@ import {
   sumFleetPayout,
   loadVehicleRateSnapshot,
   vehicleBaseOf,
+  vehicleRateOf,
+  effectivePerKmKwd,
+  perKmApplies,
 } from "../services/fleetService";
 import { getFleetDriverComparison } from "../services/fleet/fleetDriverScoreService";
 import { getDriverRating } from "../services/ratingService";
@@ -578,8 +581,11 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
       rate,
       allDistances.map((r) => r.distanceKm),
       allDistances.map((r) => r.deliveryFeeKwd),
-      allDistances.map((r) => vehicleBaseOf(vehicleRates, r.driver?.vehicleType)),
+      allDistances.map((r) => vehicleRateOf(vehicleRates, r.driver?.vehicleType)),
     );
+    // Client note, 2026-10-15: kilometres earn money when the company has a
+    // per-km rate or any of its vehicles has its own.
+    const kmPaid = perKmApplies(rate, vehicleRates);
     const privateShiftPayKwd = shifts
       .reduce((acc, sh) => acc.plus(sh.fleetPayKwd ?? 0), new Prisma.Decimal(0))
       .toDecimalPlaces(3);
@@ -601,14 +607,14 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
       // Null on a flat-rate company, which is what the screen reads to decide
       // whether to draw a kilometre line at all.
       perKmFeeKwd: rate.perKmKwd == null ? null : rate.perKmKwd.toFixed(3),
-      totalKm: rate.perKmKwd == null ? null : totalKm.toFixed(3),
+      perKmApplies: kmPaid,
+      totalKm: kmPaid ? totalKm.toFixed(3) : null,
       // Orders Darb could not measure a distance for, so a company reading a
       // base-only line has the count in front of it rather than a discrepancy
       // to find by hand.
       // A SUBSCRIPTION order is paid the shop fee, so a missing distance costs
       // the company nothing and the warning would be false.
-      ordersMissingDistance:
-        rate.perKmKwd == null || subscription ? 0 : ordersMissingDistance,
+      ordersMissingDistance: !kmPaid ? 0 : ordersMissingDistance,
       deliveredOrders: deliveredCount,
       ordersKwd: ordersKwd.toFixed(3),
       privateShiftCount: shifts.length,
@@ -628,11 +634,12 @@ router.get("/earnings", requireFleetTab("PAYOUTS"), async (req: Request, res: Re
         rateKwd: subscription
           ? null
           : (vehicleBaseOf(vehicleRates, o.driver?.vehicleType) ?? rate.baseKwd).toFixed(3),
+        perKmKwd: effectivePerKmKwd(rate, vehicleRateOf(vehicleRates, o.driver?.vehicleType))?.toFixed(3) ?? null,
         feeKwd: orderPayoutKwd(
           rate,
           o.distanceKm,
           o.deliveryFeeKwd,
-          vehicleBaseOf(vehicleRates, o.driver?.vehicleType),
+          vehicleRateOf(vehicleRates, o.driver?.vehicleType),
         ).toFixed(3),
       })),
     });
@@ -2319,9 +2326,14 @@ router.get(
         commercialModel: statement.commercialModel,
       });
       const fee = statement.feePerOrderKwd;
-      // Revision 24b: the per-vehicle per-order rates the month was cut on.
+      // Revision 24b: the per-vehicle per-order rates the month was cut on
+      // (base, and since 2026-10-15 per km; older statements hold the base
+      // alone and read as such).
       const vehicleBase = (vehicleType: string | null | undefined) =>
         vehicleBaseOf(statement.vehicleRates, vehicleType);
+      const vehicleRate = (vehicleType: string | null | undefined) =>
+        vehicleRateOf(statement.vehicleRates, vehicleType);
+      const kmPaid = perKmApplies(rate, statement.vehicleRates);
 
       // Client note: the statement should say how many each driver did. The
       // order list answers it only by counting rows by hand, which is the work
@@ -2336,6 +2348,7 @@ router.get(
           km: Prisma.Decimal;
           earned: Prisma.Decimal;
           rates: Set<string>;
+          perKmRates: Set<string>;
         }
       >();
       for (const o of orders) {
@@ -2348,17 +2361,20 @@ router.get(
           km: new Prisma.Decimal(0),
           earned: new Prisma.Decimal(0),
           rates: new Set<string>(),
+          perKmRates: new Set<string>(),
         };
         row.orders += 1;
         if (statement.commercialModel !== "SUBSCRIPTION") {
           row.rates.add((vehicleBase(o.driver?.vehicleType) ?? fee).toFixed(3));
+          const perKm = effectivePerKmKwd(rate, vehicleRate(o.driver?.vehicleType));
+          if (perKm != null) row.perKmRates.add(perKm.toFixed(3));
         }
         if (o.distanceKm != null) row.km = row.km.plus(o.distanceKm);
         // Accumulated per order, not orders × fee: with a kilometre half the
         // driver who took the long runs is worth more than the one beside them
         // on the same count, and that is the whole point of showing this.
         row.earned = row.earned.plus(
-          orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd, vehicleBase(o.driver?.vehicleType)),
+          orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd, vehicleRate(o.driver?.vehicleType)),
         );
         byDriver.set(id, row);
       }
@@ -2370,6 +2386,7 @@ router.get(
           perKmFeeKwd:
             statement.perKmFeeKwd == null ? null : statement.perKmFeeKwd.toFixed(3),
           totalKm: statement.totalKm == null ? null : statement.totalKm.toFixed(3),
+          perKmApplies: kmPaid,
           totalKwd: statement.totalKwd.toFixed(3),
           deductionsKwd: statement.deductionsKwd.toFixed(3),
           netPayableKwd:
@@ -2412,7 +2429,8 @@ router.get(
             statement.commercialModel === "SUBSCRIPTION"
               ? null
               : (vehicleBase(o.driver?.vehicleType) ?? fee).toFixed(3),
-          feeKwd: orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd, vehicleBase(o.driver?.vehicleType)).toFixed(3),
+          perKmKwd: effectivePerKmKwd(rate, vehicleRate(o.driver?.vehicleType))?.toFixed(3) ?? null,
+          feeKwd: orderPayoutKwd(rate, o.distanceKm, o.deliveryFeeKwd, vehicleRate(o.driver?.vehicleType)).toFixed(3),
         })),
         // Ordered by who did the most, because that is the order the question
         // "who carried this month" is asked in.
@@ -2423,12 +2441,13 @@ router.get(
             name: d.name,
             driverCode: d.driverCode,
             orders: d.orders,
-            totalKm: statement.perKmFeeKwd == null ? null : d.km.toFixed(3),
+            totalKm: kmPaid ? d.km.toFixed(3) : null,
             totalKwd: d.earned.toFixed(3),
             // Revision 24b: the per-order rate this driver's orders were paid
             // at (their vehicle's rate, else the base). One driver drives one
             // vehicle, so this is the rate of every order on the line.
             rateKwd: d.rates.size === 1 ? [...d.rates][0] : null,
+            perKmKwd: d.perKmRates.size === 1 ? [...d.perKmRates][0] : null,
           })),
         // The count on the statement is the one that was paid on; a difference
         // here means orders were re-stated after the month closed, and the
