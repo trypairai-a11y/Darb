@@ -5180,7 +5180,7 @@ export const en: Messages = {
   },
   dispatch: {
     title: "Delivery orders",
-    subtitle: "Every order in the network — live status, dispatch and SLA.",
+    subtitle: "Every order in the network: live status, dispatch and SLA.",
     orderNumber: "Order #",
     vendor: "Vendor",
     customer: "Customer",
